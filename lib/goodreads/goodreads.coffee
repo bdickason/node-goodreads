@@ -6,27 +6,34 @@ xml2js = require 'xml2js'
 oauth = require 'oauth'
 redis = require 'redis'
 sys = require 'sys'
-cfg = require '../config/config.js' # contains API keys, etc.
-Users = (require './users.js').Users
+## TODO REMOVE CFG + Redis
+cfg = require '../../../booklist/config/config.js' # contains API keys, etc.
 
-exports.Goodreads = class Goodreads
+class Goodreads
   
   ### CONFIG ###
 
   # Default JSON options
-  constructor: () ->
+  constructor: (config) ->
     @options = {
       host: 'www.goodreads.com',
       port: 80,
-      key: cfg.GOODREADS_KEY,
+      key: config.key,
+      secret: config.secret,
+      callback: config.callback or 'http://localhost:3000/callback',
       method: 'GET',
       path: ''
     }
+    @client = null
   
+  configure: (gr_key, gr_secret, gr_callback) ->
+    @options.key = gr_key or @options.key
+    @options.secret = gr_secret or @options.secret
+    @options.callback = gr_callback or @options.callback
 
   # OAuth options
   consumer = ->
-    new oauth.OAuth 'http://goodreads.com/oauth/request_token', 'http://goodreads.com/oauth/access_token', cfg.GOODREADS_KEY, cfg.GOODREADS_SECRET, '1.0', 'http://localhost:3000/goodreads/callback', 'HMAC-SHA1'
+    new oauth.OAuth 'http://goodreads.com/oauth/request_token', 'http://goodreads.com/oauth/access_token', @options.key, @options.secret, '1.0', @options_callback, 'HMAC-SHA1'
 
   # Start up redis to cache API stuff
   redis_client = redis.createClient cfg.REDIS_PORT, cfg.REDIS_HOSTNAME
@@ -143,3 +150,8 @@ exports.Goodreads = class Goodreads
   clone = (obj) ->
     if obj != null || typeof(obj) != 'object'
       return obj
+
+# Creates and returns a new Goodreads client.
+module.exports = {
+  client: (options) -> new Goodreads (options)
+}
