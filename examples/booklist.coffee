@@ -16,13 +16,31 @@ if not key or not secret
 # Require the client
 goodreads = require '../index.js' # For you this looks like: require 'goodreads'
 http = require 'http'
+url = require 'url'
 
-# Initiate the client
-goodreads_client = goodreads.client key, secret
+# excuse the clunkiness, I usually just require express and forget all this
 
-http.createServer((req, res) ->
-  res.writehead 200, {'Content-Type': 'text/plain'}
-  res.end 'Hello World!\n'
-).listen '3000', '127.0.0.1'
+onRequest = (req, res) ->
+  pathname = url.parse(req.url).pathname
+  console.log 'request for' + pathname + 'received'
+  switch pathname
+    when '/oauth', '/oauth/'
+      # handle oauth
+      console.log 'oauth!'
+    when '/list', '/list/'
+      gr = new goodreads.client key, secret
+      gr.getSingleList '4085451', 'web', (json) ->
+        # I would expect you won't be hardcoding these things :)
+        console.log json
+        if json
+          # Received valid return from Goodreads
+          res.write json
+          res.end()
+    else
+      # ignore all other requests including annoying favicon.ico
+      res.write 'else'
+      res.end()
 
-console.log 'Server running.'
+http.createServer(onRequest).listen(3000);
+
+console.log 'server started'
