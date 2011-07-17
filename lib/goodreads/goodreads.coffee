@@ -32,8 +32,10 @@ class Goodreads
     @options.callback = gr_callback or @options.callback
 
   # OAuth options
-  consumer = ->
-    new oauth.OAuth 'http://goodreads.com/oauth/request_token', 'http://goodreads.com/oauth/access_token', @options.key, @options.secret, '1.0', @options_callback, 'HMAC-SHA1'
+  consumer: (options) ->
+    new oauth.OAuth 'http://goodreads.com/oauth/request_token', 'http://goodreads.com/oauth/access_token', options.key, options.secret, '1.0', options.callback, 'HMAC-SHA1'
+#  consumer = ->
+#    new oauth.OAuth 'http://goodreads.com/oauth/request_token', 'http://goodreads.com/oauth/access_token', @options.key, @options.secret, '1.0', @options.callback, 'HMAC-SHA1'
 
   # Start up redis to cache API stuff
   redis_client = redis.createClient cfg.REDIS_PORT, cfg.REDIS_HOSTNAME
@@ -79,14 +81,19 @@ class Goodreads
   
   ### OAUTH ###
   requestToken: (callback, req, res) ->
-    consumer().getOAuthRequestToken (error, oauthToken, oauthTokenSecret, results) -> 
+    console.log @options  
+    
+    @consumer(@options).getOAuthRequestToken (error, oauthToken, oauthTokenSecret, results) -> 
       if error
-        console.log consumer()
+        console.log error
         callback 'Error getting OAuth request token : ' + JSON.stringify(error), 500
       else
-        req.session.oauthRequestToken = oauthToken
-        req.session.oauthRequestTokenSecret = oauthTokenSecret
-        res.redirect 'https://goodreads.com/oauth/authorize?oauth_token=' + req.session.oauthRequestToken + '&oauth_callback=' + consumer()._authorize_callback
+        console.log 
+        
+        # req.session.oauthRequestToken = oauthToken
+        # req.session.oauthRequestTokenSecret = oauthTokenSecret
+        res.redirect 'https://goodreads.com/oauth/authorize?oauth_token=' + oauthToken + '&oauth_callback=' + @consumer()._authorize_callback
+        callback oauthToken
 
   callback: (callback, req, res) ->
     parser = new xml2js.Parser()
@@ -134,7 +141,7 @@ class Goodreads
                 
           http.request _options, (res) ->
             res.setEncoding 'utf8'
-
+            
             res.on 'data', (chunk) ->
               tmp.push chunk  # Throw the chunk into the array
 
@@ -143,6 +150,7 @@ class Goodreads
               parser.parseString body
 
             parser.on 'end', (result) ->
+              
               redis_client.setex _options.path, cfg.REDIS_CACHE_TIME, JSON.stringify(result)
               callback result
           .end()
