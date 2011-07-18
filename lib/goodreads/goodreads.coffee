@@ -55,7 +55,7 @@ class Goodreads
     @getRequest callback
   
   # Get a specific list by ID
-  getSingleList: (userId, listId, callback) ->
+  getSingleShelf: (userId, listId, callback) ->
     # Provide path to the API
     console.log 'Getting list: ' + listId
 
@@ -92,8 +92,9 @@ class Goodreads
         
         # req.session.oauthRequestToken = oauthToken
         # req.session.oauthRequestTokenSecret = oauthTokenSecret
-        res.redirect 'https://goodreads.com/oauth/authorize?oauth_token=' + oauthToken + '&oauth_callback=' + @consumer()._authorize_callback
-        callback oauthToken
+
+        url = 'https://goodreads.com/oauth/authorize?oauth_token=' + oauthToken + '&oauth_callback=' + @_authorize_callback
+        return { 'oauthToken': oauthToken, 'oauthTokenSecret': oauthTokenSecret, 'url': url}
 
   callback: (callback, req, res) ->
     parser = new xml2js.Parser()

@@ -27,10 +27,21 @@ onRequest = (req, res) ->
   pathname = url.parse(req.url).pathname
   console.log 'request for' + pathname + 'received'
   switch pathname
-    # Get a user's List  
-    when '/list', '/list/'
+    # get a user's list of shelves
+    when '/shelves', '/shelves/'
       gr = new goodreads.client { 'key': key, 'secret': secret }
-      gr.getSingleList '4085451', 'web', (json) ->
+      gr.getShelves '4085451', (json) ->
+        # I would expect you won't be hardcoding these things :)
+        console.log json
+        if json
+          # Received valid return from Goodreads
+          res.write JSON.stringify json
+          # Normally this is where you'd output a beautiful template or something!
+          res.end()
+    # Get a user's shelf  
+    when '/shelf', '/shelf/'
+      gr = new goodreads.client { 'key': key, 'secret': secret }
+      gr.getSingleShelf '4085451', 'web', (json) ->
         # I would expect you won't be hardcoding these things :)
         console.log json
         if json
@@ -41,17 +52,24 @@ onRequest = (req, res) ->
     when '/oauth', '/oauth/'
       # handle oauth
       console.log 'oauth'
+
       callback = ''
       gr = new goodreads.client { 'key': key, 'secret': secret }
-      gr.requestToken callback, req, res
+      tmp = gr.requestToken callback, req, res
+      console.log tmp
       
     when '/callback'
       # handle callback
       console.log 'callback'
     else
       # ignore all other requests including annoying favicon.ico
-      res.write 'Ok but you should enter a parameter or two.\n\n'
-      res.write 'How about... <A HREF=/list>Get a list</A> or <A HREF=/oauth>Try out OAuth</A>?'
+      res.write '<html>Ok but you should enter a parameter or two.\n\n'
+      res.write 'How about...\n\n'
+      res.write '<ul>'
+      res.write '<li><A HREF=/shelves>Get a list of shelves</A></li>'
+      res.write '<li><A HREF=/shelf>Get all books on a single shelf</A></li>'
+      res.write '<li><em>Coming soon: OAuth!</em></li>'
+      res.write '</ul></html>'
       res.end()
 
 http.createServer(onRequest).listen(3000);
