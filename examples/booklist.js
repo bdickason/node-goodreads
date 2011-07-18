@@ -56,8 +56,7 @@
           'key': key,
           'secret': secret
         });
-        tmp = gr.requestToken(callback, req, res);
-        return console.log(tmp);
+        return tmp = gr.requestToken(callback, req, res);
       case '/callback':
         return console.log('callback');
       default:

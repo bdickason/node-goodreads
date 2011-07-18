@@ -49,6 +49,7 @@ onRequest = (req, res) ->
           res.write JSON.stringify json
           # Normally this is where you'd output a beautiful template or something!
           res.end()
+          
     when '/oauth', '/oauth/'
       # handle oauth
       console.log 'oauth'
@@ -56,11 +57,11 @@ onRequest = (req, res) ->
       callback = ''
       gr = new goodreads.client { 'key': key, 'secret': secret }
       tmp = gr.requestToken callback, req, res
-      console.log tmp
       
     when '/callback'
-      # handle callback
+      # handle Goodreads' callback
       console.log 'callback'
+      
     else
       # ignore all other requests including annoying favicon.ico
       res.write '<html>Ok but you should enter a parameter or two.\n\n'

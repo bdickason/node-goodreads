@@ -3,7 +3,7 @@
 
 http = require 'http'
 xml2js = require 'xml2js'
-oauth = require 'oauth'
+oauth = (require 'oauth').OAuth
 redis = require 'redis'
 sys = require 'sys'
 ## TODO REMOVE CFG + Redis
@@ -23,6 +23,10 @@ class Goodreads
       callback: config.callback or 'http://localhost:3000/callback',
       method: 'GET',
       path: ''
+      oauth_request_url: 'http://goodreads.com/oauth/request_token'
+      oauth_access_url: 'http://goodreads.com/oauth/access_token'
+      oauth_version: '1.0'
+      oauth_encryption: 'HMAC-SHA1'
     }
     @client = null
   
@@ -32,8 +36,8 @@ class Goodreads
     @options.callback = gr_callback or @options.callback
 
   # OAuth options
-  consumer: (options) ->
-    new oauth.OAuth 'http://goodreads.com/oauth/request_token', 'http://goodreads.com/oauth/access_token', options.key, options.secret, '1.0', options.callback, 'HMAC-SHA1'
+#  consumer: (options) ->
+#    new oauth.OAuth 'http://goodreads.com/oauth/request_token', 'http://goodreads.com/oauth/access_token', options.key, options.secret, '1.0', options.callback, 'HMAC-SHA1'
 #  consumer = ->
 #    new oauth.OAuth 'http://goodreads.com/oauth/request_token', 'http://goodreads.com/oauth/access_token', @options.key, @options.secret, '1.0', @options.callback, 'HMAC-SHA1'
 
@@ -72,6 +76,7 @@ class Goodreads
     console.log @options.path
     console.log req.session
     
+
     consumer().getProtectedResource @options.path, 'GET', req.session.goodreads_accessToken, req.session.goodreads_secret, (error, data, response) ->
       if error
         console.log consumer()
@@ -83,17 +88,23 @@ class Goodreads
   requestToken: (callback, req, res) ->
     console.log @options  
     
-    @consumer(@options).getOAuthRequestToken (error, oauthToken, oauthTokenSecret, results) -> 
+    oa = new oauth @options.oauth_request_url, @options.oauth_access_url, @options.key, @options.secret, @options.oauth_version, @options.callback, @options.oauth_encryption
+    
+    console.log oa
+    
+    oa.getOAuthRequestToken (error, oauthToken, oauthTokenSecret, results) -> 
       if error
         console.log error
         callback 'Error getting OAuth request token : ' + JSON.stringify(error), 500
       else
-        console.log 
+        console.log results
         
         # req.session.oauthRequestToken = oauthToken
         # req.session.oauthRequestTokenSecret = oauthTokenSecret
 
-        url = 'https://goodreads.com/oauth/authorize?oauth_token=' + oauthToken + '&oauth_callback=' + @_authorize_callback
+        console.log oauthTokenSecret
+        url = 'https://goodreads.com/oauth/authorize?oauth_token=' + oauthToken + '&oauth_callback=' + oa._authorize_callback
+        console.log url
         return { 'oauthToken': oauthToken, 'oauthTokenSecret': oauthTokenSecret, 'url': url}
 
   callback: (callback, req, res) ->
