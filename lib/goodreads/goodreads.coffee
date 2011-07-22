@@ -76,51 +76,53 @@ class Goodreads
     console.log @options.path
     console.log req.session
     
+    oa = new oauth @options.oauth_request_url, @options.oauth_access_url, @options.key, @options.secret, @options.oauth_version, @options.callback, @options.oauth_encryption
 
-    consumer().getProtectedResource @options.path, 'GET', req.session.goodreads_accessToken, req.session.goodreads_secret, (error, data, response) ->
+    oa.getProtectedResource @options.path, 'GET', req.session.goodreads_accessToken, req.session.goodreads_secret, (error, data, response) ->
       if error
-        console.log consumer()
+        console.log oa
         callback 'Error getting OAuth request token : ' + JSON.stringify(error), 500
       else
         callback data
   
   ### OAUTH ###
-  requestToken: (callback, req, res) ->
-    console.log @options  
-    
+  
+  # requestToken - calls back an object with oauthToken, oauthTokenSecret, and the URL!
+  requestToken: (callback) ->
     oa = new oauth @options.oauth_request_url, @options.oauth_access_url, @options.key, @options.secret, @options.oauth_version, @options.callback, @options.oauth_encryption
-    
-    console.log oa
-    
+
     oa.getOAuthRequestToken (error, oauthToken, oauthTokenSecret, results) -> 
       if error
         console.log error
         callback 'Error getting OAuth request token : ' + JSON.stringify(error), 500
       else
-        console.log results
-        
-        # req.session.oauthRequestToken = oauthToken
-        # req.session.oauthRequestTokenSecret = oauthTokenSecret
-
-        console.log oauthTokenSecret
+        # assemble goodreads URL
         url = 'https://goodreads.com/oauth/authorize?oauth_token=' + oauthToken + '&oauth_callback=' + oa._authorize_callback
-        console.log url
-        return { 'oauthToken': oauthToken, 'oauthTokenSecret': oauthTokenSecret, 'url': url}
 
-  callback: (callback, req, res) ->
+        callback { oauthToken, oauthTokenSecret, url }
+        
+  # processCallback - expects: oauthToken, oauthTokenSecret (from the query string)
+  # Note: call this after requestToken!
+  processCallback: (oauthToken, oauthTokenSecret, callback) ->
     parser = new xml2js.Parser()
   
-    consumer().getOAuthAccessToken req.session.oauthRequestToken, req.session.oauthRequestTokenSecret, req.query.oauth_verifier, (error, oauthAccessToken, oauthAccessTokenSecret, results) ->
+    console.log oauthToken + oauthTokenSecret
+    
+    oa = new oauth @options.oauth_request_url, @options.oauth_access_url, @options.key, @options.secret, @options.oauth_version, @options.callback, @options.oauth_encryption
+    
+    oa.getOAuthAccessToken oauthToken, oauthTokenSecret, (error, oauthAccessToken, oauthAccessTokenSecret, results) ->
       if error
-        res.send 'Error getting OAuth access token : ' + (sys.inspect error) + '[' + oauthAccessToken + '] [' + oauthAccessTokenSecret + '] [' + (sys.inspect results) + ']', 500
+        callback 'Error getting OAuth access token : ' + (sys.inspect error) + '[' + oauthAccessToken + '] [' + oauthAccessTokenSecret + '] [' + (sys.inspect results) + ']', 500
       else
-        req.session.goodreads_accessToken = oauthAccessToken
-        req.session.goodreads_secret = oauthAccessTokenSecret
-        consumer().get 'http://www.goodreads.com/api/auth_user', req.session.goodreads_accessToken, req.session.goodreads_secret, (error, data, response) ->
+        # req.session.goodreads_accessToken = oauthAccessToken
+        # req.session.goodreads_secret = oauthAccessTokenSecret
+    
+        oa.get 'http://www.goodreads.com/api/auth_user', oauthToken, oauthTokenSecret, (error, data, response) ->
           if error
-            res.send 'Error getting User ID : ' + (sys.inspect error), 500
+            callback 'Error getting User ID : ' + (sys.inspect error), 500
           else
-            parser.parseString(data)
+            console.log data
+            # parser.parseString(data)
   
     parser.on 'end', (result) ->
       req.session.goodreads_name = result.user.name
@@ -134,7 +136,7 @@ class Goodreads
         users = new Users
         users.addUser(req.session.goodreads_id, req.session.goodreads_name, callback)
         console.log 'finished saving to the db'
-      
+  
   ### API: 'GET' ###
   getRequest: (callback) ->
     _options = @options

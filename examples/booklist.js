@@ -1,5 +1,5 @@
 (function() {
-  var cfg, goodreads, http, key, onRequest, secret, url;
+  var cfg, fakeSession, goodreads, http, key, onRequest, secret, url;
   cfg = require('../../booklist/config/config.js');
   /* Example!                                                    */
   /*   Grab a simple list of books from a random good reads user */
@@ -17,8 +17,9 @@
   goodreads = require('../index.js');
   http = require('http');
   url = require('url');
+  fakeSession = {};
   onRequest = function(req, res) {
-    var callback, gr, pathname, tmp;
+    var gr, oauthToken, oauthTokenSecret, params, pathname;
     pathname = url.parse(req.url).pathname;
     console.log('request for' + pathname + 'received');
     switch (pathname) {
@@ -48,17 +49,49 @@
             return res.end();
           }
         });
-      case '/oauth':
-      case '/oauth/':
-        console.log('oauth');
-        callback = '';
+      case '/friends':
+      case '/friends/':
         gr = new goodreads.client({
           'key': key,
           'secret': secret
         });
-        return tmp = gr.requestToken(callback, req, res);
+        return gr.getFriends('4085451', function(json) {
+          console.log(json);
+          if (json) {
+            res.write(JSON.stringify(json));
+            return res.end();
+          }
+        });
+      case '/oauth':
+      case '/oauth/':
+        console.log('oauth');
+        gr = new goodreads.client({
+          'key': key,
+          'secret': secret
+        });
+        return gr.requestToken(function(callback) {
+          console.log(callback);
+          fakeSession.oauthToken = callback.oauthToken;
+          fakeSession.oauthTokenSecret = callback.oauthTokenSecret;
+          res.writeHead('302', {
+            'Location': callback.url
+          });
+          return res.end();
+        });
       case '/callback':
-        return console.log('callback');
+        console.log('callback');
+        oauthToken = fakeSession.oauthToken;
+        oauthTokenSecret = fakeSession.oauthTokenSecret;
+        params = url.parse(req.url, true);
+        console.log(params);
+        gr = new goodreads.client({
+          'key': key,
+          'secret': secret
+        });
+        return gr.processCallback(oauthToken, oauthTokenSecret, function(callback) {
+          console.log(callback);
+          return res.end();
+        });
       default:
         res.write('<html>Ok but you should enter a parameter or two.\n\n');
         res.write('How about...\n\n');

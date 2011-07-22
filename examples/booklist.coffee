@@ -22,11 +22,13 @@ http = require 'http'
 url = require 'url'
 
 # excuse the clunkiness, I usually just require express and forget all this
+fakeSession = { }
 
 onRequest = (req, res) ->
   pathname = url.parse(req.url).pathname
   console.log 'request for' + pathname + 'received'
   switch pathname
+
     # get a user's list of shelves
     when '/shelves', '/shelves/'
       gr = new goodreads.client { 'key': key, 'secret': secret }
@@ -34,10 +36,11 @@ onRequest = (req, res) ->
         # I would expect you won't be hardcoding these things :)
         console.log json
         if json
-          # Received valid return from Goodreads
+          # Received valid response from Goodreads
           res.write JSON.stringify json
           # Normally this is where you'd output a beautiful template or something!
           res.end()
+
     # Get a user's shelf  
     when '/shelf', '/shelf/'
       gr = new goodreads.client { 'key': key, 'secret': secret }
@@ -45,22 +48,53 @@ onRequest = (req, res) ->
         # I would expect you won't be hardcoding these things :)
         console.log json
         if json
-          # Received valid return from Goodreads
+          # Received valid response from Goodreads
           res.write JSON.stringify json
           # Normally this is where you'd output a beautiful template or something!
           res.end()
+    
+    # Get a protected resource
+    when '/friends', '/friends/'
+      gr = new goodreads.client { 'key': key, 'secret': secret }
+      gr.getFriends '4085451', (json) ->
+        # Yadda yadda put a real variable here etc.
+        console.log json
+        if json
+          # Received valid response from Goodreads
+          res.write JSON.stringify json
+          res.end()
+            
           
     when '/oauth', '/oauth/'
       # handle oauth
       console.log 'oauth'
 
-      callback = ''
       gr = new goodreads.client { 'key': key, 'secret': secret }
-      tmp = gr.requestToken callback, req, res
+      gr.requestToken (callback) ->
+        console.log callback
+        # log token and secret to our fake session
+        fakeSession.oauthToken = callback.oauthToken
+        fakeSession.oauthTokenSecret = callback.oauthTokenSecret
+        # Redirect to tmp.url!!
+        res.writeHead '302', { 'Location': callback.url }
+        res.end()
       
     when '/callback'
       # handle Goodreads' callback
       console.log 'callback'
+
+      # grab token and secret from our fake session
+      oauthToken = fakeSession.oauthToken
+      oauthTokenSecret = fakeSession.oauthTokenSecret
+      
+      # parse the querystring
+      params = url.parse req.url, true
+      console.log params
+      gr = new goodreads.client { 'key': key, 'secret': secret }
+      gr.processCallback oauthToken, oauthTokenSecret, (callback) ->
+        console.log callback
+        res.end()
+      
       
     else
       # ignore all other requests including annoying favicon.ico
