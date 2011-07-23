@@ -1,6 +1,3 @@
-# TODO remove this!
-cfg = require '../../booklist/config/config.js' # contains API keys, etc.
-
 ### Example!                                                    ###
 ###   Grab a simple list of books from a random good reads user ###
 ###                                                             ###
@@ -8,12 +5,17 @@ cfg = require '../../booklist/config/config.js' # contains API keys, etc.
 
 ### Configuration                                               ###
 ###   Get your keys at: http://www.goodreads.com/api/keys       ###
-key = cfg.GOODREADS_KEY  ## Enter your key here to test! 
-secret = cfg.GOODREADS_SECRET ## Enter your goodreads secret here to test!
+key = process.env.GOODREADS_KEY  ## Enter your key here to test! 
+secret = process.env.GOODREADS_SECRET ## Enter your goodreads secret here to test!
 
 if not key or not secret
-  console.log 'Edit this file and enter your Goodreads dev Key and Secret.'
-  console.log 'Get them at:  http://www.goodreads.com/api/keys'
+  console.log 'You need to set your Goodreads dev Key and Secret!'
+  console.log '---'
+  console.log '1) Get them at:  http://www.goodreads.com/api/keys'
+  console.log '2) Set your key environment variable with: export GOODREADS_KEY=yourkey'
+  console.log '3) Set your secret environment variable with: export GOODREADS_SECRET=yoursecret'
+  console.log '---'
+  console.log 'Having trouble? Ask me at @bdickason on Twitter.'
   process.exit 1
 
 # Require the client
@@ -34,7 +36,6 @@ onRequest = (req, res) ->
       gr = new goodreads.client { 'key': key, 'secret': secret }
       gr.getShelves '4085451', (json) ->
         # I would expect you won't be hardcoding these things :)
-        console.log json
         if json
           # Received valid response from Goodreads
           res.write JSON.stringify json
@@ -46,7 +47,6 @@ onRequest = (req, res) ->
       gr = new goodreads.client { 'key': key, 'secret': secret }
       gr.getSingleShelf '4085451', 'web', (json) ->
         # I would expect you won't be hardcoding these things :)
-        console.log json
         if json
           # Received valid response from Goodreads
           res.write JSON.stringify json
@@ -58,7 +58,6 @@ onRequest = (req, res) ->
       gr = new goodreads.client { 'key': key, 'secret': secret }
       gr.getFriends '4085451', (json) ->
         # Yadda yadda put a real variable here etc.
-        console.log json
         if json
           # Received valid response from Goodreads
           res.write JSON.stringify json
@@ -67,21 +66,20 @@ onRequest = (req, res) ->
           
     when '/oauth', '/oauth/'
       # handle oauth
-      console.log 'oauth'
 
       gr = new goodreads.client { 'key': key, 'secret': secret }
       gr.requestToken (callback) ->
-        console.log callback
+
         # log token and secret to our fake session
         fakeSession.oauthToken = callback.oauthToken
         fakeSession.oauthTokenSecret = callback.oauthTokenSecret
-        # Redirect to tmp.url!!
+
+        # Redirect to the goodreads url!!
         res.writeHead '302', { 'Location': callback.url }
         res.end()
       
     when '/callback'
       # handle Goodreads' callback
-      console.log 'callback'
 
       # grab token and secret from our fake session
       oauthToken = fakeSession.oauthToken
@@ -108,4 +106,4 @@ onRequest = (req, res) ->
 
 http.createServer(onRequest).listen(3000);
 
-console.log 'server started'
+console.log 'server started on port 3000'

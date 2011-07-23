@@ -1,17 +1,20 @@
 (function() {
-  var cfg, fakeSession, goodreads, http, key, onRequest, secret, url;
-  cfg = require('../../booklist/config/config.js');
   /* Example!                                                    */
   /*   Grab a simple list of books from a random good reads user */
   /*                                                             */
   /* Note: Requires Goodreads Dev Keys (see below)               */
   /* Configuration                                               */
-  /*   Get your keys at: http://www.goodreads.com/api/keys       */
-  key = cfg.GOODREADS_KEY;
-  secret = cfg.GOODREADS_SECRET;
+  /*   Get your keys at: http://www.goodreads.com/api/keys       */  var fakeSession, goodreads, http, key, onRequest, secret, url;
+  key = process.env.GOODREADS_KEY;
+  secret = process.env.GOODREADS_SECRET;
   if (!key || !secret) {
-    console.log('Edit this file and enter your Goodreads dev Key and Secret.');
-    console.log('Get them at:  http://www.goodreads.com/api/keys');
+    console.log('You need to set your Goodreads dev Key and Secret!');
+    console.log('---');
+    console.log('1) Get them at:  http://www.goodreads.com/api/keys');
+    console.log('2) Set your key environment variable with: export GOODREADS_KEY=yourkey');
+    console.log('3) Set your secret environment variable with: export GOODREADS_SECRET=yoursecret');
+    console.log('---');
+    console.log('Having trouble? Ask me at @bdickason on Twitter.');
     process.exit(1);
   }
   goodreads = require('../index.js');
@@ -30,7 +33,6 @@
           'secret': secret
         });
         return gr.getShelves('4085451', function(json) {
-          console.log(json);
           if (json) {
             res.write(JSON.stringify(json));
             return res.end();
@@ -43,7 +45,6 @@
           'secret': secret
         });
         return gr.getSingleShelf('4085451', 'web', function(json) {
-          console.log(json);
           if (json) {
             res.write(JSON.stringify(json));
             return res.end();
@@ -56,7 +57,6 @@
           'secret': secret
         });
         return gr.getFriends('4085451', function(json) {
-          console.log(json);
           if (json) {
             res.write(JSON.stringify(json));
             return res.end();
@@ -64,13 +64,11 @@
         });
       case '/oauth':
       case '/oauth/':
-        console.log('oauth');
         gr = new goodreads.client({
           'key': key,
           'secret': secret
         });
         return gr.requestToken(function(callback) {
-          console.log(callback);
           fakeSession.oauthToken = callback.oauthToken;
           fakeSession.oauthTokenSecret = callback.oauthTokenSecret;
           res.writeHead('302', {
@@ -79,7 +77,6 @@
           return res.end();
         });
       case '/callback':
-        console.log('callback');
         oauthToken = fakeSession.oauthToken;
         oauthTokenSecret = fakeSession.oauthTokenSecret;
         params = url.parse(req.url, true);
@@ -103,5 +100,5 @@
     }
   };
   http.createServer(onRequest).listen(3000);
-  console.log('server started');
+  console.log('server started on port 3000');
 }).call(this);

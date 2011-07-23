@@ -4,10 +4,7 @@
 http = require 'http'
 xml2js = require 'xml2js'
 oauth = (require 'oauth').OAuth
-redis = require 'redis'
 sys = require 'sys'
-## TODO REMOVE CFG + Redis
-cfg = require '../../../booklist/config/config.js' # contains API keys, etc.
 
 class Goodreads
   
@@ -37,21 +34,12 @@ class Goodreads
     @options.secret = gr_secret or @options.secret
     @options.callback = gr_callback or @options.callback
 
-  # OAuth options
-#  consumer: (options) ->
-#    new oauth.OAuth 'http://goodreads.com/oauth/request_token', 'http://goodreads.com/oauth/access_token', options.key, options.secret, '1.0', options.callback, 'HMAC-SHA1'
-#  consumer = ->
-#    new oauth.OAuth 'http://goodreads.com/oauth/request_token', 'http://goodreads.com/oauth/access_token', @options.key, @options.secret, '1.0', @options.callback, 'HMAC-SHA1'
-
-  # Start up redis to cache API stuff
-  redis_client = redis.createClient cfg.REDIS_PORT, cfg.REDIS_HOSTNAME
-  redis_client.on 'error', (err) ->
-    console.log 'REDIS Error:' + err
-
-
   ### BOOKSHELVES ###
 
-  # Get all shelves for a given user
+  # getShelves - Get all shelves for a given user
+  # Input: userId
+  # Output: json (as callback)
+  # Example: getShelves '4085451', (json) ->
   getShelves: (userId, callback) ->
     # Provide path to the API
     console.log 'Getting shelves ' + userId
@@ -60,7 +48,10 @@ class Goodreads
   
     @getRequest callback
   
-  # Get a specific list by ID
+  # getSingleShelf - Get a specific list by ID
+  # Input: userId, listId
+  # Output: json (as callback)
+  # Example: getSingleShelf '4085451', 'web', (json) ->
   getSingleShelf: (userId, listId, callback) ->
     # Provide path to the API
     console.log 'Getting list: ' + listId
@@ -69,20 +60,21 @@ class Goodreads
   
     @getRequest callback
   
-  ### FRIENDS ###
-  getFriends: (userId, req, res, callback) ->
+  ### NOTE: Not Working Yet!!!! ###
+  # getFriends - Get friends for a given user
+  # Input: userId, accessToken, accessTokenSecret
+  # Output: json (as callback)
+  # Example: getSingleShelf '4085451', 'asjdfklac23414', '1234jkmk1m100', (json) ->
+  getFriends: (userId, accessToken, accessTokenSecret, callback) ->
     # Provide path to the API
     console.log 'Getting friends ' + userId
 
     @options.path = 'http://www.goodreads.com/friend/user/' + userId + '.xml?&key=' + @options.key
-    console.log @options.path
-    console.log req.session
     
     oa = new oauth @options.oauth_request_url, @options.oauth_access_url, @options.key, @options.secret, @options.oauth_version, @options.callback, @options.oauth_encryption
 
-    oa.getProtectedResource @options.path, 'GET', req.session.goodreads_accessToken, req.session.goodreads_secret, (error, data, response) ->
+    oa.getProtectedResource @options.path, 'GET', accessToken, accessTokenSecret, (error, data, response) ->
       if error
-        console.log oa
         callback 'Error getting OAuth request token : ' + JSON.stringify(error), 500
       else
         callback data
@@ -90,6 +82,9 @@ class Goodreads
   ### OAUTH ###
   
   # requestToken - calls back an object with oauthToken, oauthTokenSecret, and the URL!
+  # Input: none
+  # Output: json { oauthToken: 'iu1iojij14141411414', oauthTokenSecret: 'j1kljklsajdklf132141', url: 'http://goodreads.com/blah'}
+  # Example: requestToken (callback) ->
   requestToken: (callback) ->
     oa = new oauth @options.oauth_request_url, @options.oauth_access_url, @options.key, @options.secret, @options.oauth_version, @options.callback, @options.oauth_encryption
 
@@ -105,6 +100,10 @@ class Goodreads
         
   # processCallback - expects: oauthToken, oauthTokenSecret, authorize (from the query string)
   # Note: call this after requestToken!
+  # Input: oauthToken, oauthTokenSecret, authorize
+  # Output: json { 'username': 'Brad Dickason', 'userid': '404168', 'success': 1 }
+  # Example: processCallback oauthToken, oauthTokenSecret, params.query.authorize, (callback) ->
+  
   processCallback: (oauthToken, oauthTokenSecret, authorize, callback) ->
     parser = new xml2js.Parser()
           
@@ -129,34 +128,25 @@ class Goodreads
   ### API: 'GET' ###
   getRequest: (callback) ->
     _options = @options
-    redis_client.get _options.path, (err, reply) ->
-      if err
-        console.log 'REDIS Error: ' + err
-      else
-        if reply
-          callback JSON.parse(reply)
-        else
-          # Crap! Go grab it!
 
-          tmp = []  # Russ at the NYC NodeJS Meetup said array push is faster
+    tmp = []  # Russ at the NYC NodeJS Meetup said array push is faster
 
-          parser = new xml2js.Parser()
-                
-          http.request _options, (res) ->
-            res.setEncoding 'utf8'
-            
-            res.on 'data', (chunk) ->
-              tmp.push chunk  # Throw the chunk into the array
+    parser = new xml2js.Parser()
+          
+    http.request _options, (res) ->
+      res.setEncoding 'utf8'
+      
+      res.on 'data', (chunk) ->
+        tmp.push chunk  # Throw the chunk into the array
 
-            res.on 'end', (e) ->
-              body = tmp.join('')
-              parser.parseString body
+      res.on 'end', (e) ->
+        body = tmp.join('')
+        parser.parseString body
 
-            parser.on 'end', (result) ->
-              
-              redis_client.setex _options.path, cfg.REDIS_CACHE_TIME, JSON.stringify(result)
-              callback result
-          .end()
+      parser.on 'end', (result) ->
+        callback result
+        
+    .end()
               
   clone = (obj) ->
     if obj != null || typeof(obj) != 'object'
