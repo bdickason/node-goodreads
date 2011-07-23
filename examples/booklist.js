@@ -21,7 +21,7 @@
   onRequest = function(req, res) {
     var gr, oauthToken, oauthTokenSecret, params, pathname;
     pathname = url.parse(req.url).pathname;
-    console.log('request for' + pathname + 'received');
+    console.log('request for [' + pathname + '] received');
     switch (pathname) {
       case '/shelves':
       case '/shelves/':
@@ -83,13 +83,12 @@
         oauthToken = fakeSession.oauthToken;
         oauthTokenSecret = fakeSession.oauthTokenSecret;
         params = url.parse(req.url, true);
-        console.log(params);
         gr = new goodreads.client({
           'key': key,
           'secret': secret
         });
-        return gr.processCallback(oauthToken, oauthTokenSecret, function(callback) {
-          console.log(callback);
+        return gr.processCallback(oauthToken, oauthTokenSecret, params.query.authorize, function(callback) {
+          res.write(JSON.stringify(callback));
           return res.end();
         });
       default:
@@ -98,7 +97,7 @@
         res.write('<ul>');
         res.write('<li><A HREF=/shelves>Get a list of shelves</A></li>');
         res.write('<li><A HREF=/shelf>Get all books on a single shelf</A></li>');
-        res.write('<li><em>Coming soon: OAuth!</em></li>');
+        res.write('<li><A HREF=/oauth>Connect to Goodreads via OAuth!</A></li>');
         res.write('</ul></html>');
         return res.end();
     }

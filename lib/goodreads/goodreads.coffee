@@ -28,6 +28,8 @@ class Goodreads
       oauth_version: '1.0'
       oauth_encryption: 'HMAC-SHA1'
     }
+    @oauthAccessToken = ''
+    @oauthAcessTokenSecret = ''
     @client = null
   
   configure: (gr_key, gr_secret, gr_callback) ->
@@ -101,41 +103,28 @@ class Goodreads
 
         callback { oauthToken, oauthTokenSecret, url }
         
-  # processCallback - expects: oauthToken, oauthTokenSecret (from the query string)
+  # processCallback - expects: oauthToken, oauthTokenSecret, authorize (from the query string)
   # Note: call this after requestToken!
-  processCallback: (oauthToken, oauthTokenSecret, callback) ->
+  processCallback: (oauthToken, oauthTokenSecret, authorize, callback) ->
     parser = new xml2js.Parser()
-  
-    console.log oauthToken + oauthTokenSecret
-    
+          
     oa = new oauth @options.oauth_request_url, @options.oauth_access_url, @options.key, @options.secret, @options.oauth_version, @options.callback, @options.oauth_encryption
     
-    oa.getOAuthAccessToken oauthToken, oauthTokenSecret, (error, oauthAccessToken, oauthAccessTokenSecret, results) ->
+    oa.getOAuthAccessToken oauthToken, oauthTokenSecret, authorize, (error, oauthAccessToken, oauthAccessTokenSecret, results) ->
       if error
         callback 'Error getting OAuth access token : ' + (sys.inspect error) + '[' + oauthAccessToken + '] [' + oauthAccessTokenSecret + '] [' + (sys.inspect results) + ']', 500
-      else
-        # req.session.goodreads_accessToken = oauthAccessToken
-        # req.session.goodreads_secret = oauthAccessTokenSecret
-    
-        oa.get 'http://www.goodreads.com/api/auth_user', oauthToken, oauthTokenSecret, (error, data, response) ->
+      else    
+        oa.get 'http://www.goodreads.com/api/auth_user', oauthAccessToken, oauthAccessTokenSecret, (error, data, response) ->
           if error
             callback 'Error getting User ID : ' + (sys.inspect error), 500
           else
-            console.log data
-            # parser.parseString(data)
+            parser.parseString(data)
   
-    parser.on 'end', (result) ->
-      req.session.goodreads_name = result.user.name
-      req.session.goodreads_id = result.user['@'].id
-      req.session.goodreads_auth = 1
-
-      console.log req.session.goodreads_name + 'signed in with user ID: ' + req.session.goodreads_id + '\n'
-      res.redirect '/'
-      
-      if req.session.goodreads_id != null
-        users = new Users
-        users.addUser(req.session.goodreads_id, req.session.goodreads_name, callback)
-        console.log 'finished saving to the db'
+    parser.on 'end', (result) ->    
+      if result.user['@'].id != null
+        callback { 'username': result.user.name, 'userid': result.user['@'].id, 'success': 1 }
+      else
+        callback 'Error: Invalid XML response received from Goodreads', 500
   
   ### API: 'GET' ###
   getRequest: (callback) ->

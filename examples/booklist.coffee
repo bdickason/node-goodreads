@@ -26,7 +26,7 @@ fakeSession = { }
 
 onRequest = (req, res) ->
   pathname = url.parse(req.url).pathname
-  console.log 'request for' + pathname + 'received'
+  console.log 'request for [' + pathname + '] received'
   switch pathname
 
     # get a user's list of shelves
@@ -89,12 +89,11 @@ onRequest = (req, res) ->
       
       # parse the querystring
       params = url.parse req.url, true
-      console.log params
-      gr = new goodreads.client { 'key': key, 'secret': secret }
-      gr.processCallback oauthToken, oauthTokenSecret, (callback) ->
-        console.log callback
-        res.end()
       
+      gr = new goodreads.client { 'key': key, 'secret': secret }
+      gr.processCallback oauthToken, oauthTokenSecret, params.query.authorize, (callback) ->
+        res.write JSON.stringify callback
+        res.end()
       
     else
       # ignore all other requests including annoying favicon.ico
@@ -103,7 +102,7 @@ onRequest = (req, res) ->
       res.write '<ul>'
       res.write '<li><A HREF=/shelves>Get a list of shelves</A></li>'
       res.write '<li><A HREF=/shelf>Get all books on a single shelf</A></li>'
-      res.write '<li><em>Coming soon: OAuth!</em></li>'
+      res.write '<li><A HREF=/oauth>Connect to Goodreads via OAuth!</A></li>'
       res.write '</ul></html>'
       res.end()
 
