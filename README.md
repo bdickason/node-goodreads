@@ -44,7 +44,7 @@ Functions
 **processCallback** - expects: oauthToken, oauthTokenSecret, authorize (from the query string)
 _Note: call this after requestToken!_
 * Input: oauthToken, oauthTokenSecret, authorize
-* Output: json `{ 'username': 'Brad Dickason', 'userid': '404168', 'success': 1 }`
+* Output: json `{ 'username': 'Brad Dickason', 'userid': '404168', 'success': 1, 'accessToken': '04ajdfkja', 'accessTokenSecret': 'i14k31j41jkm' }`
 * Example: `processCallback oauthToken, oauthTokenSecret, params.query.authorize, (callback) ->`
   
 
@@ -60,6 +60,9 @@ If you're still having issues, you can submit them here: https://github.com/bdic
 
 Changelog
 ======
+**v0.0.2** - Removed OAuth workarounds
+* OAuth Callback (`processCallback`) now properly returns an Access Token (`accessToken`) and Access Token Secret (`accessTokenSecret`)
+
 **v0.0.1** - First release! Woohoo!!
 * Added support getting a list of a user's shelves (`getShelves`)
 * Added support for getting all books on a single shelf (`getSingleShelf`)

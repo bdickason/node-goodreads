@@ -101,15 +101,15 @@ class Goodreads
   # processCallback - expects: oauthToken, oauthTokenSecret, authorize (from the query string)
   # Note: call this after requestToken!
   # Input: oauthToken, oauthTokenSecret, authorize
-  # Output: json { 'username': 'Brad Dickason', 'userid': '404168', 'success': 1 }
+  # Output: json { 'username': 'Brad Dickason', 'userid': '404168', 'success': 1, 'accessToken': '04ajdfkja', 'accessTokenSecret': 'i14k31j41jkm' }
   # Example: processCallback oauthToken, oauthTokenSecret, params.query.authorize, (callback) ->
   
   processCallback: (oauthToken, oauthTokenSecret, authorize, callback) ->
-    parser = new xml2js.Parser()
           
     oa = new oauth @options.oauth_request_url, @options.oauth_access_url, @options.key, @options.secret, @options.oauth_version, @options.callback, @options.oauth_encryption
     
     oa.getOAuthAccessToken oauthToken, oauthTokenSecret, authorize, (error, oauthAccessToken, oauthAccessTokenSecret, results) ->
+      parser = new xml2js.Parser()
       if error
         callback 'Error getting OAuth access token : ' + (sys.inspect error) + '[' + oauthAccessToken + '] [' + oauthAccessTokenSecret + '] [' + (sys.inspect results) + ']', 500
       else    
@@ -119,11 +119,11 @@ class Goodreads
           else
             parser.parseString(data)
   
-    parser.on 'end', (result) ->    
-      if result.user['@'].id != null
-        callback { 'username': result.user.name, 'userid': result.user['@'].id, 'success': 1 }
-      else
-        callback 'Error: Invalid XML response received from Goodreads', 500
+      parser.on 'end', (result) ->    
+        if result.user['@'].id != null
+          callback { 'username': result.user.name, 'userid': result.user['@'].id, 'success': 1, 'accessToken': oauthAccessToken, 'accessTokenSecret': oauthAccessTokenSecret }
+        else
+          callback 'Error: Invalid XML response received from Goodreads', 500
   
   ### API: 'GET' ###
   getRequest: (callback) ->

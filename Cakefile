@@ -1,7 +1,7 @@
 
 {spawn, exec} = require 'child_process'
 
-task 'assets:watch', 'Watch source files and build JS & CSS', (options) ->
+task 'watch', 'Watch source files and build JS & CSS', (options) ->
   runCommand = (name, args...) ->
     proc =           spawn name, args
     proc.stderr.on   'data', (buffer) -> console.log buffer.toString()
@@ -10,3 +10,10 @@ task 'assets:watch', 'Watch source files and build JS & CSS', (options) ->
   #runCommand 'sass',   ['--watch', 'public/css/sass:public/css']
   runCommand 'coffee', '-wc', '.'
 
+task 'tests', 'Run all tests in /tests', (options) ->
+  runCommand = (name, args...) ->
+    proc =           spawn name, args
+    proc.stderr.on   'data', (buffer) -> console.log buffer.toString()
+    proc.stdout.on   'data', (buffer) -> console.log buffer.toString()
+    proc.on          'exit', (status) -> process.exit(1) if status isnt 0
+  runCommand 'node', 'runtests.js'
