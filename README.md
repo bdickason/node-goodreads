@@ -27,24 +27,24 @@ Installation
 Functions
 =====
 **getShelves** - Get all shelves for a given user
-*  Input: userId
-*  Output: json (as callback)
-*  Example: getShelves '4085451', (json) ->
+* Input: userId
+* Output: json (as callback)
+* Example: `getShelves '4085451', (json) ->`
   
 **getSingleShelf** - Get a specific list by ID
-*  Input: userId, listId
-*  Output: json (as callback)
-*  Example: `getSingleShelf '4085451', 'web', (json) ->`
+* Input: userId, listId
+* Output: json (as callback)
+* Example: `getSingleShelf '4085451', 'web', (json) ->`
 
 **requestToken** - OAUTH: calls back an object with oauthToken, oauthTokenSecret, and the URL!
-*  Input: none
-*  Output: json { oauthToken: 'iu1iojij14141411414', oauthTokenSecret: 'j1kljklsajdklf132141', url: 'http://goodreads.com/blah'}
-*  Example: `requestToken (callback) ->`
+* Input: none
+* Output: json `{ oauthToken: 'iu1iojij14141411414', oauthTokenSecret: 'j1kljklsajdklf132141', url: 'http://goodreads.com/blah'}`
+* Example: `requestToken (callback) ->`
 
 **processCallback** - expects: oauthToken, oauthTokenSecret, authorize (from the query string)
 _Note: call this after requestToken!_
-*  Input: oauthToken, oauthTokenSecret, authorize
-*  Output: json { 'username': 'Brad Dickason', 'userid': '404168', 'success': 1 }
+* Input: oauthToken, oauthTokenSecret, authorize
+* Output: json `{ 'username': 'Brad Dickason', 'userid': '404168', 'success': 1 }`
 * Example: `processCallback oauthToken, oauthTokenSecret, params.query.authorize, (callback) ->`
   
 
