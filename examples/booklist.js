@@ -28,6 +28,7 @@
     switch (pathname) {
       case '/shelves':
       case '/shelves/':
+        console.log('Getting shelves ' + '4085451');
         gr = new goodreads.client({
           'key': key,
           'secret': secret
@@ -40,6 +41,7 @@
         });
       case '/shelf':
       case '/shelf/':
+        console.log('Getting list: ' + 'web');
         gr = new goodreads.client({
           'key': key,
           'secret': secret
@@ -52,6 +54,7 @@
         });
       case '/friends':
       case '/friends/':
+        console.log('Getting friends ' + '4085451');
         gr = new goodreads.client({
           'key': key,
           'secret': secret

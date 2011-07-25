@@ -33,6 +33,7 @@ onRequest = (req, res) ->
 
     # get a user's list of shelves
     when '/shelves', '/shelves/'
+      console.log 'Getting shelves ' + '4085451'
       gr = new goodreads.client { 'key': key, 'secret': secret }
       gr.getShelves '4085451', (json) ->
         # I would expect you won't be hardcoding these things :)
@@ -44,6 +45,7 @@ onRequest = (req, res) ->
 
     # Get a user's shelf  
     when '/shelf', '/shelf/'
+      console.log 'Getting list: ' + 'web'
       gr = new goodreads.client { 'key': key, 'secret': secret }
       gr.getSingleShelf '4085451', 'web', (json) ->
         # I would expect you won't be hardcoding these things :)
@@ -55,6 +57,7 @@ onRequest = (req, res) ->
     
     # Get a protected resource
     when '/friends', '/friends/'
+      console.log 'Getting friends ' + '4085451'
       gr = new goodreads.client { 'key': key, 'secret': secret }
       gr.getFriends '4085451', (json) ->
         # Yadda yadda put a real variable here etc.

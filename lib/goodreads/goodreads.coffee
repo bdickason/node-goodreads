@@ -42,8 +42,6 @@ class Goodreads
   # Example: getShelves '4085451', (json) ->
   getShelves: (userId, callback) ->
     # Provide path to the API
-    console.log 'Getting shelves ' + userId
-
     @options.path = 'http://www.goodreads.com/shelf/list.xml?user_id=' + userId + "&key=" + @options.key
   
     @getRequest callback
@@ -54,8 +52,6 @@ class Goodreads
   # Example: getSingleShelf '4085451', 'web', (json) ->
   getSingleShelf: (userId, listId, callback) ->
     # Provide path to the API
-    console.log 'Getting list: ' + listId
-
     @options.path = 'http://www.goodreads.com/review/list/' + userId + '.xml?key=' + @options.key + '&shelf=' + listId
   
     @getRequest callback
@@ -67,8 +63,6 @@ class Goodreads
   # Example: getSingleShelf '4085451', 'asjdfklac23414', '1234jkmk1m100', (json) ->
   getFriends: (userId, accessToken, accessTokenSecret, callback) ->
     # Provide path to the API
-    console.log 'Getting friends ' + userId
-
     @options.path = 'http://www.goodreads.com/friend/user/' + userId + '.xml?&key=' + @options.key
     
     oa = new oauth @options.oauth_request_url, @options.oauth_access_url, @options.key, @options.secret, @options.oauth_version, @options.callback, @options.oauth_encryption
