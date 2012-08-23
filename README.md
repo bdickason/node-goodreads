@@ -1,3 +1,4 @@
+[![build status](https://secure.travis-ci.org/bdickason/node-goodreads.png)](http://travis-ci.org/bdickason/node-goodreads)
 Goodreads - Use NodeJS to tap into the Goodreads API
 -----
 
