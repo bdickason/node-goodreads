@@ -3,10 +3,10 @@ Goodreads - Use NodeJS to tap into the Goodreads API
 
 This is a dead simple wrapper for the Goodreads API when using NodeJS. I've only exposed a few GR API functions so far but would be happy to entertain adding more if there's demand.
 
-Goodreads API: http://goodreads.com/api
-Github: https://github.com/bdickason/node-goodreads
-Twitter: [@bdickason](http://twitter.com/bdickason)
-E-mail: dickason@gmail.com
+* Goodreads API: http://goodreads.com/api
+* Github: https://github.com/bdickason/node-goodreads
+* Twitter: [@bdickason](http://twitter.com/bdickason)
+* E-mail: dickason@gmail.com
 
 Installation
 ======
