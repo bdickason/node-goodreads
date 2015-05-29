@@ -5,6 +5,7 @@ http = require 'http'
 xml2js = require 'xml2js'
 oauth = (require 'oauth').OAuth
 sys = require 'sys'
+querystring = require 'querystring'
 
 class Goodreads
   
@@ -50,10 +51,12 @@ class Goodreads
   # Input: userId, listId
   # Output: json (as callback)
   # Example: getSingleShelf '4085451', 'web', (json) ->
-  getSingleShelf: (userId, listId, callback) ->
-    # Provide path to the API
-    @options.path = 'http://www.goodreads.com/review/list/' + userId + '.xml?key=' + @options.key + '&shelf=' + listId
-  
+  getSingleShelf = (shelfOptions, callback) ->
+    shelfOptions.key = @options.key
+    queryOptions = querystring.stringify(shelfOptions)
+    userID = shelfOptions.userID
+    delete shelfOptions.userID
+    @options.path = 'http://www.goodreads.com/review/list/' + userID + '.xml?' + querystring.stringify(shelfOptions)
     @getRequest callback
   
   ### NOTE: Not Working Yet!!!! ###

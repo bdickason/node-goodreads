@@ -47,7 +47,7 @@ onRequest = (req, res) ->
     when '/shelf', '/shelf/'
       console.log 'Getting list: ' + 'web'
       gr = new goodreads.client { 'key': key, 'secret': secret }
-      gr.getSingleShelf '4085451', 'web', (json) ->
+      gr.getSingleShelf {'userID': '4085451', 'shelf': 'web', 'page': 1, 'per_page': 200}, (json) ->
         # I would expect you won't be hardcoding these things :)
         if json
           # Received valid response from Goodreads
