@@ -32,9 +32,9 @@ Functions
 * Example: `getShelves '4085451', (json) ->`
   
 **getSingleShelf** - Get a specific list by ID
-* Input: userId, listId
+* Input: shelfOptions object with userID (required), shelf (required), page (optional), and per_page (optional) properties.
 * Output: json (as callback)
-* Example: `getSingleShelf '4085451', 'web', (json) ->`
+* Example: `getSingleShelf {'userID': '4085451', 'shelf': 'web', 'page': 1, 'per_page': 200}, (json) ->`
 
 **requestToken** - OAUTH: calls back an object with oauthToken, oauthTokenSecret, and the URL!
 * Input: none

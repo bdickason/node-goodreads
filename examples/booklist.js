@@ -46,7 +46,10 @@
           'key': key,
           'secret': secret
         });
-        return gr.getSingleShelf('4085451', 'web', function(json) {
+        return gr.getSingleShelf({
+          userID: '4085451',
+          shelf: 'web'
+        }, function(json) {
           if (json) {
             res.write(JSON.stringify(json));
             return res.end();
