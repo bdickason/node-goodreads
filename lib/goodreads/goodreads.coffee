@@ -117,8 +117,8 @@ class Goodreads
             parser.parseString(data)
   
       parser.on 'end', (result) ->    
-        if result.user['@'].id != null
-          callback { 'username': result.user.name, 'userid': result.user['@'].id, 'success': 1, 'accessToken': oauthAccessToken, 'accessTokenSecret': oauthAccessTokenSecret }
+        if result.user['$'].id != null
+          callback { 'username': result.user.name, 'userid': result.user['$'].id, 'success': 1, 'accessToken': oauthAccessToken, 'accessTokenSecret': oauthAccessTokenSecret }
         else
           callback 'Error: Invalid XML response received from Goodreads', 500
   
