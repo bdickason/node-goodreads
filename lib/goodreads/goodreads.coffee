@@ -104,7 +104,7 @@ class Goodreads
   processCallback: (oauthToken, oauthTokenSecret, authorize, callback) ->
           
     oa = new oauth @options.oauth_request_url, @options.oauth_access_url, @options.key, @options.secret, @options.oauth_version, @options.callback, @options.oauth_encryption
-    
+
     oa.getOAuthAccessToken oauthToken, oauthTokenSecret, authorize, (error, oauthAccessToken, oauthAccessTokenSecret, results) ->
       parser = new xml2js.Parser()
       if error
@@ -116,9 +116,11 @@ class Goodreads
           else
             parser.parseString(data)
   
-      parser.on 'end', (result) ->    
-        if result.user['$'].id != null
-          callback { 'username': result.user.name, 'userid': result.user['$'].id, 'success': 1, 'accessToken': oauthAccessToken, 'accessTokenSecret': oauthAccessTokenSecret }
+      parser.on 'end', (result) ->
+        result = result.GoodreadsResponse # Object is now getting this in front of the object
+
+        if result.user[0]['$'].id != null
+          callback { 'username': result.user.name, 'userid': result.user[0]['$'].id, 'success': 1, 'accessToken': oauthAccessToken, 'accessTokenSecret': oauthAccessTokenSecret }
         else
           callback 'Error: Invalid XML response received from Goodreads', 500
   
