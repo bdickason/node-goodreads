@@ -51,7 +51,7 @@ class Goodreads
   # Input: userId, listId
   # Output: json (as callback)
   # Example: getSingleShelf '4085451', 'web', (json) ->
-  getSingleShelf = (shelfOptions, callback) ->
+  getSingleShelf: (shelfOptions, callback) ->
     shelfOptions.key = @options.key
     queryOptions = querystring.stringify(shelfOptions)
     userID = shelfOptions.userID
