@@ -26,11 +26,16 @@ Installation
 
 Functions
 =====
+**showUser** - get user info with userName
+* input - valid userName
+* output - json (as callback)
+* Example: `getShelves 'your_username', (json) ->`
+
 **getShelves** - Get all shelves for a given user
 * Input: userId
 * Output: json (as callback)
 * Example: `getShelves '4085451', (json) ->`
-  
+
 **getSingleShelf** - Get a specific list by ID
 * Input: shelfOptions object with userID (required), shelf (required), page (optional), and per_page (optional) properties.
 * Output: json (as callback)
@@ -46,7 +51,7 @@ _Note: call this after requestToken!_
 * Input: oauthToken, oauthTokenSecret, authorize
 * Output: json `{ 'username': 'Brad Dickason', 'userid': '404168', 'success': 1, 'accessToken': '04ajdfkja', 'accessTokenSecret': 'i14k31j41jkm' }`
 * Example: `processCallback oauthToken, oauthTokenSecret, params.query.authorize, (callback) ->`
-  
+
 
 _More to come!_
 
