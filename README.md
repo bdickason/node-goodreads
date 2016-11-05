@@ -30,6 +30,7 @@ Functions
 * input - valid userName
 * output - json (as callback)
 * Example: `getShelves 'your_username', (json) ->`
+* You must have created a username. You can do so [here](https://www.goodreads.com/user/edit).
 
 **getShelves** - Get all shelves for a given user
 * Input: userId
@@ -65,6 +66,9 @@ If you're still having issues, you can submit them here: https://github.com/bdic
 
 Changelog
 ======
+**v0.0.5** - Removed OAuth workarounds
+* {`showUser`} method added - can get user information given their username.
+
 **v0.0.2** - Removed OAuth workarounds
 * OAuth Callback (`processCallback`) now properly returns an Access Token (`accessToken`) and Access Token Secret (`accessTokenSecret`)
 

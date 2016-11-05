@@ -5,7 +5,7 @@
 
 ### Configuration                                               ###
 ###   Get your keys at: http://www.goodreads.com/api/keys       ###
-key = process.env.GOODREADS_KEY  ## Enter your key here to test! 
+key = process.env.GOODREADS_KEY  ## Enter your key here to test!
 secret = process.env.GOODREADS_SECRET ## Enter your goodreads secret here to test!
 
 if not key or not secret
@@ -27,9 +27,21 @@ url = require 'url'
 fakeSession = { }
 
 onRequest = (req, res) ->
-  pathname = url.parse(req.url).pathname
+  parse = user.parse(req.url, true)
+  pathname = parse.pathname
   console.log 'request for [' + pathname + '] received'
   switch pathname
+
+    # get a users info
+    when '/user', '/user/'
+      username = parse.query.username
+      console.log 'Getting user info' + username
+      gr.showUser username, (json) ->
+        if json
+          # Received valid response from Goodreads
+          res.write JSON.stringify json
+          # Normally this is where you'd output a beautiful template or something!
+          res.end()
 
     # get a user's list of shelves
     when '/shelves', '/shelves/'
@@ -43,7 +55,7 @@ onRequest = (req, res) ->
           # Normally this is where you'd output a beautiful template or something!
           res.end()
 
-    # Get a user's shelf  
+    # Get a user's shelf
     when '/shelf', '/shelf/'
       console.log 'Getting list: ' + 'web'
       gr = new goodreads.client { 'key': key, 'secret': secret }
@@ -54,7 +66,7 @@ onRequest = (req, res) ->
           res.write JSON.stringify json
           # Normally this is where you'd output a beautiful template or something!
           res.end()
-    
+
     # Get a protected resource
     when '/friends', '/friends/'
       console.log 'Getting friends ' + '4085451'
@@ -65,8 +77,8 @@ onRequest = (req, res) ->
           # Received valid response from Goodreads
           res.write JSON.stringify json
           res.end()
-            
-          
+
+
     when '/oauth', '/oauth/'
       # handle oauth
 
@@ -80,22 +92,22 @@ onRequest = (req, res) ->
         # Redirect to the goodreads url!!
         res.writeHead '302', { 'Location': callback.url }
         res.end()
-      
+
     when '/callback'
       # handle Goodreads' callback
 
       # grab token and secret from our fake session
       oauthToken = fakeSession.oauthToken
       oauthTokenSecret = fakeSession.oauthTokenSecret
-      
+
       # parse the querystring
       params = url.parse req.url, true
-      
+
       gr = new goodreads.client { 'key': key, 'secret': secret }
       gr.processCallback oauthToken, oauthTokenSecret, params.query.authorize, (callback) ->
         res.write JSON.stringify callback
         res.end()
-      
+
     else
       # ignore all other requests including annoying favicon.ico
       res.write '<html>Ok but you should enter a parameter or two.\n\n'
