@@ -93,7 +93,7 @@ class Goodreads
   # Output: json (as callback)
   # Example: searchBooks 'Enders Game', (json) ->
   searchBooks: (q, callback) ->
-    @options.path = "https://www.goodreads.com/search/index.xml?key=#{@options.key}&q=#{q}"
+    @options.path = "https://www.goodreads.com/search/index.xml?key=#{@options.key}&q=#{encodeURI(q)}"
     @getRequest callback
 
 
