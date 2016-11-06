@@ -86,6 +86,18 @@ class Goodreads
       else
         callback data
 
+
+  ### Search ###
+  # searchBooks
+  # q: search value
+  # Output: json (as callback)
+  # Example: searchBooks 'Enders Game', (json) ->
+  searchBooks: (q, callback) ->
+    @options.path = "https://www.goodreads.com/search/index.xml?key=#{@options.key}&q=#{q}"
+    @getRequest callback
+
+
+
   ### OAUTH ###
 
   # requestToken - calls back an object with oauthToken, oauthTokenSecret, and the URL!
