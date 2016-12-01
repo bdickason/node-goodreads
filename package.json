@@ -1,7 +1,7 @@
 {
 	"name": "goodreads",
 	"description": "Wrapper for the Goodreads API",
-	"version": "0.0.3",
+	"version": "0.0.5",
 	"author": "Brad Dickason <dickason@gmail.com> (http://braddickason.com)",
 	"repository": {
 	  "type": "git",
@@ -13,7 +13,7 @@
 		"oauth": ">= 0.9.2",
 		"coffee-script": ">= 0.0.1"
 	  },
-	"directories": { 
+	"directories": {
 	  "lib": "./lib/goodreads",
 	  "example": "./examples"
 	  },

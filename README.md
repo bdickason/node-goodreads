@@ -66,6 +66,9 @@ If you're still having issues, you can submit them here: https://github.com/bdic
 
 Changelog
 ======
+**v0.0.5** - Removed OAuth workarounds
+* {`showUser`} method added - can get user information given their username.
+
 **v0.0.2** - Removed OAuth workarounds
 * OAuth Callback (`processCallback`) now properly returns an Access Token (`accessToken`) and Access Token Secret (`accessTokenSecret`)
 

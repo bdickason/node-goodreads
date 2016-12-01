@@ -43,6 +43,17 @@ onRequest = (req, res) ->
           # Normally this is where you'd output a beautiful template or something!
           res.end()
 
+    # get a users info
+    when '/search', '/search/'
+      q = parse.query.q
+      console.log 'searching for book' + q 
+      gr.searchBooksq, (json) ->
+        if json
+          # Received valid response from Goodreads
+          res.write JSON.stringify json
+          # Normally this is where you'd output a beautiful template or something!
+          res.end()
+
     # get a user's list of shelves
     when '/shelves', '/shelves/'
       console.log 'Getting shelves ' + '4085451'
