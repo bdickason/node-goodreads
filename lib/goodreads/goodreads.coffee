@@ -45,6 +45,16 @@ class Goodreads
     @options.path = "https://www.goodreads.com/user/show.xml?key=#{@options.key}&username=#{username}"
     @getRequest callback
 
+  ### AUTHORS ###
+
+  # getAuthor - Get author information by ID
+  # input - authorId
+  # output - json (as callback)
+  # Example: getAuthor '72887', (json) ->
+  getAuthor: (authorId, callback) ->
+    @options.path = 'https://www.goodreads.com/author/show.xml?id=' + authorId + '&key=' + @options.key
+    @getRequest callback
+
   ### BOOKSHELVES ###
 
   # getShelves - Get all shelves for a given user
