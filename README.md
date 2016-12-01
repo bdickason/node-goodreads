@@ -30,6 +30,7 @@ Functions
 * input - valid userName
 * output - json (as callback)
 * Example: `getShelves 'your_username', (json) ->`
+* You must have created a username. You can do so [here](https://www.goodreads.com/user/edit).
 
 **getShelves** - Get all shelves for a given user
 * Input: userId
