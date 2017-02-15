@@ -4,7 +4,7 @@
 http = require 'http'
 xml2js = require 'xml2js'
 oauth = (require 'oauth').OAuth
-sys = require 'sys'
+utils = require 'utils'
 querystring = require 'querystring'
 
 class Goodreads
@@ -130,11 +130,11 @@ class Goodreads
     oa.getOAuthAccessToken oauthToken, oauthTokenSecret, authorize, (error, oauthAccessToken, oauthAccessTokenSecret, results) ->
       parser = new xml2js.Parser()
       if error
-        callback 'Error getting OAuth access token : ' + (sys.inspect error) + '[' + oauthAccessToken + '] [' + oauthAccessTokenSecret + '] [' + (sys.inspect results) + ']', 500
+        callback 'Error getting OAuth access token : ' + (utils.inspect error) + '[' + oauthAccessToken + '] [' + oauthAccessTokenSecret + '] [' + (utils.inspect results) + ']', 500
       else
         oa.get 'http://www.goodreads.com/api/auth_user', oauthAccessToken, oauthAccessTokenSecret, (error, data, response) ->
           if error
-            callback 'Error getting User ID : ' + (sys.inspect error), 500
+            callback 'Error getting User ID : ' + (utils.inspect error), 500
           else
             parser.parseString(data)
 
