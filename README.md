@@ -12,17 +12,18 @@ Installation
 ======
 1. Install npm: `curl http://npmjs.org/install.sh | sh`
 2. Grab this module from npm: `npm install goodreads`
-3. Include it in your program:
+3. Compile Coffeescript into JavaScript files using `npm run build`
+4. Include it in your program:
  * Coffeescript: `goodreads = require 'goodreads'`
  * Javascript: `goodreads = require('goodreads');`
-4. create a new instance of the Goodreads client:
+5. create a new instance of the Goodreads client:
  * Coffeescript: `gr = new goodreads.client { 'key': key, 'secret': secret }`
  * Javascript: `gr = new goodreads.client({ 'key': key, 'secret': secret });`
-5. Go get a goodreads developer key/secret from http://www.goodreads.com/api/keys
-6. _(optional)_ Add your key/secret to your environment variables so Nodejs can access them
+6. Go get a goodreads developer key/secret from http://www.goodreads.com/api/keys
+7. _(optional)_ Add your key/secret to your environment variables so Nodejs can access them
  * Key: `export GOODREADS_KEY=yourkey`
  * Secret: `export GOODREADS_SECRET=yoursecret`
-7. Try it out! Maybe do a `node examples/booklist.js` to get an idea how things work
+8. Try it out! Maybe do a `node examples/booklist.js` to get an idea how things work
 
 Functions
 =====
