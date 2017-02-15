@@ -1,1 +1,6 @@
+# compiled JS
+*.js
+
+# npm
+npm-debug.log
 node_modules
