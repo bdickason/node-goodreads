@@ -3,6 +3,9 @@
   "description": "Wrapper for the Goodreads API",
   "version": "0.1.0",
   "author": "Brad Dickason <dickason@gmail.com> (http://braddickason.com)",
+  "scripts": {
+    "build": "coffee -c ./lib/goodreads ./examples index.coffee"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/bdickason/node-goodreads"
