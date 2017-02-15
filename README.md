@@ -53,6 +53,15 @@ _Note: call this after requestToken!_
 * Output: json `{ 'username': 'Brad Dickason', 'userid': '404168', 'success': 1, 'accessToken': '04ajdfkja', 'accessTokenSecret': 'i14k31j41jkm' }`
 * Example: `processCallback oauthToken, oauthTokenSecret, params.query.authorize, (callback) ->`
 
+**getAuthor** - Get paginated list of books for a given author
+* Input: authorId, page
+* Output: json (as callback)
+* Example: `Example: getAuthor '18541', 2, (json) ->`
+
+**getSeries** - Get all books in a given series
+* Input: seriesId
+* Output: json (as callback)
+* Example: `getSeries '40650', (json) ->`
 
 _More to come!_
 

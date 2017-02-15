@@ -43,10 +43,20 @@ onRequest = (req, res) ->
           # Normally this is where you'd output a beautiful template or something!
           res.end()
 
+    when '/series', '/series/'
+      console.log 'Getting list of books from series ' + '40650'
+      gr = new goodreads.client { 'key': key, 'secret': secret }
+      gr.getSeries '40650', (json) =>
+
+    when '/author', '/author/'
+      console.log 'Getting page 2 of list of books by author ' + '18541'
+      gr = new goodreads.client { 'key': key, 'secret': secret }
+      gr.getAuthor '18541', 2, (json) =>
+
     # get a users info
     when '/search', '/search/'
       q = parse.query.q
-      console.log 'searching for book' + q 
+      console.log 'searching for book' + q
       gr.searchBooksq, (json) ->
         if json
           # Received valid response from Goodreads
