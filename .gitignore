@@ -1,5 +1,5 @@
-# compiled JS
-*.js
+# dist folder
+dist
 
 # npm
 npm-debug.log
