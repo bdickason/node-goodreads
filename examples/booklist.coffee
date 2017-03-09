@@ -57,7 +57,7 @@ onRequest = (req, res) ->
     when '/search', '/search/'
       q = parse.query.q
       console.log 'searching for book' + q
-      gr.searchBooksq, (json) ->
+      gr.searchBooks q (json) ->
         if json
           # Received valid response from Goodreads
           res.write JSON.stringify json

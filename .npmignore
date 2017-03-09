@@ -1,0 +1,7 @@
+node_modules
+./examples
+./lib
+.npmignore
+*.coffee
+*.log
+*.tgz
