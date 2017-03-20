@@ -27,7 +27,7 @@ url = require 'url'
 fakeSession = { }
 
 onRequest = (req, res) ->
-  parse = user.parse(req.url, true)
+  parse = url.parse(req.url, true)
   pathname = parse.pathname
   console.log 'request for [' + pathname + '] received'
   switch pathname
@@ -35,7 +35,8 @@ onRequest = (req, res) ->
     # get a users info
     when '/user', '/user/'
       username = parse.query.username
-      console.log 'Getting user info' + username
+      console.log 'Getting user info for ' + username
+      gr = new goodreads.client { 'key': key, 'secret': secret }
       gr.showUser username, (json) ->
         if json
           # Received valid response from Goodreads
