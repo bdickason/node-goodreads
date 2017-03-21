@@ -83,11 +83,20 @@ class Goodreads
   # Example: getSingleShelf '4085451', 'web', (json) ->
   getSingleShelf: (shelfOptions, callback) ->
     shelfOptions.key = @options.key
-    queryOptions = querystring.stringify(shelfOptions)
     userID = shelfOptions.userID
     delete shelfOptions.userID
+    if "accessToken" of shelfOptions
+      @oauthAccessToken = shelfOptions.accessToken
+      @oauthAcessTokenSecret = shelfOptions.accessTokenSecret
+      delete shelfOptions.accessToken
+      delete shelfOptions.accessTokenSecret
+    queryOptions = querystring.stringify(shelfOptions)
     @options.path = 'http://www.goodreads.com/review/list/' + userID + '.xml?' + querystring.stringify(shelfOptions)
-    @getRequest callback
+    if @oauthAccessToken
+      @getProtectedRequest (result) -> callback(result.books[0].book)
+    else
+      @getRequest (result) -> callback(result.GoodreadsResponse.books[0].book)
+        
 
   # getFriends - Get friends for a given user
   # Input: userId, accessToken, accessTokenSecret
@@ -96,20 +105,10 @@ class Goodreads
   getFriends: (userId, accessToken, accessTokenSecret, callback) ->
     # Provide path to the API
     @options.path = 'http://www.goodreads.com/friend/user/' + userId + '?format=xml'
-
-    oa = new oauth @options.oauth_request_url, @options.oauth_access_url, @options.key, @options.secret, @options.oauth_version, @options.callback, @options.oauth_encryption
-    parser = new xml2js.Parser()
-    oa.get @options.path, accessToken, accessTokenSecret, (error, data, response) ->
-      if error
-        callback 'Error getting OAuth request token : ' + JSON.stringify(error), 500
-      else
-        parser.parseString(data)
-    parser.on 'end', (result) ->
-      result = result.GoodreadsResponse # Object is now getting this in front of the object
-      if result.friends != null
-        callback result.friends
-      else
-        callback 'Error: Invalid XML response received from Goodreads', 500
+    @oauthAccessToken = accessToken
+    @oauthAcessTokenSecret = accessTokenSecret
+    @getProtectedRequest (result) ->
+      callback(result.friends[0].user)
 
   ### Search ###
   # searchBooks
@@ -212,6 +211,21 @@ class Goodreads
         callback result
 
     .end()
+   
+  getProtectedRequest: (callback) ->
+    oa = new oauth @options.oauth_request_url, @options.oauth_access_url, @options.key, @options.secret, @options.oauth_version, @options.callback, @options.oauth_encryption
+    parser = new xml2js.Parser()
+    oa.get @options.path, @oauthAccessToken, @oauthAcessTokenSecret, (error, data, response) ->
+      if error
+        callback 'Error getting OAuth request token : ' + JSON.stringify(error), 500
+      else
+        parser.parseString(data)
+    parser.on 'end', (result) ->
+      result = result.GoodreadsResponse # Object is now getting this in front of the object
+      if result != null
+        callback result
+      else
+        callback 'Error: Invalid XML response received from Goodreads', 500
 
   clone = (obj) ->
     if obj != null || typeof(obj) != 'object'
