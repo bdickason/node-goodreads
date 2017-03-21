@@ -21,9 +21,9 @@ class Goodreads
       callback: config.callback or 'http://localhost:3000/callback',
       method: 'GET',
       path: ''
-      oauth_request_url: 'http://goodreads.com/oauth/request_token'
-      oauth_access_url: 'http://goodreads.com/oauth/access_token'
-      oauth_version: '1.0'
+      oauth_request_url: 'https://goodreads.com/oauth/request_token'
+      oauth_access_url: 'https://goodreads.com/oauth/access_token'
+      oauth_version: '1.0A'
       oauth_encryption: 'HMAC-SHA1'
     }
     @oauthAccessToken = ''
@@ -83,29 +83,32 @@ class Goodreads
   # Example: getSingleShelf '4085451', 'web', (json) ->
   getSingleShelf: (shelfOptions, callback) ->
     shelfOptions.key = @options.key
-    queryOptions = querystring.stringify(shelfOptions)
     userID = shelfOptions.userID
     delete shelfOptions.userID
+    if "accessToken" of shelfOptions
+      @oauthAccessToken = shelfOptions.accessToken
+      @oauthAcessTokenSecret = shelfOptions.accessTokenSecret
+      delete shelfOptions.accessToken
+      delete shelfOptions.accessTokenSecret
+    queryOptions = querystring.stringify(shelfOptions)
     @options.path = 'http://www.goodreads.com/review/list/' + userID + '.xml?' + querystring.stringify(shelfOptions)
-    @getRequest callback
+    if @oauthAccessToken
+      @getProtectedRequest (result) -> callback(result.books[0].book)
+    else
+      @getRequest (result) -> callback(result.GoodreadsResponse.books[0].book)
+        
 
-  ### NOTE: Not Working Yet!!!! ###
   # getFriends - Get friends for a given user
   # Input: userId, accessToken, accessTokenSecret
-  # Output: json (as callback)
+  # Output: json (as callback) [{"$":{"start":"1","end":"30","total":"78"},"user":[{"id":["7324227"],"name":["Becca Christensen"],"link":["http://www.goodreads.com/user/show/7324227-becca-christensen"]...
   # Example: getSingleShelf '4085451', 'asjdfklac23414', '1234jkmk1m100', (json) ->
   getFriends: (userId, accessToken, accessTokenSecret, callback) ->
     # Provide path to the API
-    @options.path = 'http://www.goodreads.com/friend/user/' + userId + '.xml?&key=' + @options.key
-
-    oa = new oauth @options.oauth_request_url, @options.oauth_access_url, @options.key, @options.secret, @options.oauth_version, @options.callback, @options.oauth_encryption
-
-    oa.getProtectedResource @options.path, 'GET', accessToken, accessTokenSecret, (error, data, response) ->
-      if error
-        callback 'Error getting OAuth request token : ' + JSON.stringify(error), 500
-      else
-        callback data
-
+    @options.path = 'http://www.goodreads.com/friend/user/' + userId + '?format=xml'
+    @oauthAccessToken = accessToken
+    @oauthAcessTokenSecret = accessTokenSecret
+    @getProtectedRequest (result) ->
+      callback(result.friends[0].user)
 
   ### Search ###
   # searchBooks
@@ -115,7 +118,6 @@ class Goodreads
   searchBooks: (q, callback) ->
     @options.path = "https://www.goodreads.com/search/index.xml?key=#{@options.key}&q=#{encodeURI(q)}"
     @getRequest callback
-
 
 
   ### OAUTH ###
@@ -134,7 +136,6 @@ class Goodreads
       else
         # assemble goodreads URL
         url = 'https://goodreads.com/oauth/authorize?oauth_token=' + oauthToken + '&oauth_callback=' + oa._authorize_callback
-
         callback { oauthToken, oauthTokenSecret, url }
 
   # processCallback - expects: oauthToken, oauthTokenSecret, authorize (from the query string)
@@ -162,9 +163,31 @@ class Goodreads
         result = result.GoodreadsResponse # Object is now getting this in front of the object
 
         if result.user[0]['$'].id != null
-          callback { 'username': result.user.name, 'userid': result.user[0]['$'].id, 'success': 1, 'accessToken': oauthAccessToken, 'accessTokenSecret': oauthAccessTokenSecret }
+          callback { 'username': result.user[0].name[0], 'userid': result.user[0]['$'].id, 'success': 1, 'accessToken': oauthAccessToken, 'accessTokenSecret': oauthAccessTokenSecret }
         else
           callback 'Error: Invalid XML response received from Goodreads', 500
+          
+  # showAuthUser - get the user currently authenticated via oauth (for testing)
+  # Note: call only after oauth
+  # Input: oauthAccessToken, oauthAccessTokenSecret
+  # Output: json {"$":{"id":"4085451"},"name":["your name"],"link":["http://www.goodreads.com/user/show/4085451-yourname?utm_medium=api"]}
+  # Example: showAuthUser fakeSession.accessToken, fakeSession.accessTokenSecret, (json) ->
+  
+  showAuthUser: (accessToken, accessTokenSecret, callback) ->
+    oa = new oauth @options.oauth_request_url, @options.oauth_access_url, @options.key, @options.secret, @options.oauth_version, @options.callback, @options.oauth_encryption
+    parser = new xml2js.Parser()
+    oa.get "http://www.goodreads.com/api/auth_user", accessToken, accessTokenSecret, (error, data, response) ->
+      if error
+        callback 'Error getting OAuth request token : ' + JSON.stringify(error), 500
+      else
+        parser.parseString(data)
+    parser.on 'end', (result) ->
+      result = result.GoodreadsResponse # Object is now getting this in front of the object
+
+      if result.user[0] != null
+        callback result.user[0]
+      else
+        callback 'Error: Invalid XML response received from Goodreads', 500
 
   ### API: 'GET' ###
   getRequest: (callback) ->
@@ -188,6 +211,21 @@ class Goodreads
         callback result
 
     .end()
+   
+  getProtectedRequest: (callback) ->
+    oa = new oauth @options.oauth_request_url, @options.oauth_access_url, @options.key, @options.secret, @options.oauth_version, @options.callback, @options.oauth_encryption
+    parser = new xml2js.Parser()
+    oa.get @options.path, @oauthAccessToken, @oauthAcessTokenSecret, (error, data, response) ->
+      if error
+        callback 'Error getting OAuth request token : ' + JSON.stringify(error), 500
+      else
+        parser.parseString(data)
+    parser.on 'end', (result) ->
+      result = result.GoodreadsResponse # Object is now getting this in front of the object
+      if result != null
+        callback result
+      else
+        callback 'Error: Invalid XML response received from Goodreads', 500
 
   clone = (obj) ->
     if obj != null || typeof(obj) != 'object'

@@ -26,6 +26,8 @@ url = require 'url'
 # excuse the clunkiness, I usually just require express and forget all this
 fakeSession = { }
 
+sample_user = 4085451
+
 onRequest = (req, res) ->
   parse = url.parse(req.url, true)
   pathname = parse.pathname
@@ -67,9 +69,9 @@ onRequest = (req, res) ->
 
     # get a user's list of shelves
     when '/shelves', '/shelves/'
-      console.log 'Getting shelves ' + '4085451'
+      console.log 'Getting shelves ' + sample_user
       gr = new goodreads.client { 'key': key, 'secret': secret }
-      gr.getShelves '4085451', (json) ->
+      gr.getShelves sample_user, (json) ->
         # I would expect you won't be hardcoding these things :)
         if json
           # Received valid response from Goodreads
@@ -81,8 +83,15 @@ onRequest = (req, res) ->
     when '/shelf', '/shelf/'
       console.log 'Getting list: ' + 'web'
       gr = new goodreads.client { 'key': key, 'secret': secret }
-      gr.getSingleShelf {'userID': '4085451', 'shelf': 'web', 'page': 1, 'per_page': 200}, (json) ->
-        # I would expect you won't be hardcoding these things :)
+      shelfOptions = {'userID': sample_user, 'shelf': 'web', 'page': 1, 'per_page': 100}
+      # I would expect you won't be hardcoding these things :)
+      # There is a strange bug in /reviews/list. for per_page > 175, you get <error>forbidden</error>
+      # I suspect it has to do with the processing time, so if you're getting the error, try reducing per_page
+      if "accessToken" of fakeSession
+        shelfOptions.accessToken = fakeSession.accessToken
+        shelfOptions.accessTokenSecret = fakeSession.accessTokenSecret
+        console.log shelfOptions
+      gr.getSingleShelf shelfOptions, (json) ->
         if json
           # Received valid response from Goodreads
           res.write JSON.stringify json
@@ -91,9 +100,9 @@ onRequest = (req, res) ->
 
     # Get a protected resource
     when '/friends', '/friends/'
-      console.log 'Getting friends ' + '4085451'
+      console.log 'Getting friends ' + sample_user
       gr = new goodreads.client { 'key': key, 'secret': secret }
-      gr.getFriends '4085451', (json) ->
+      gr.getFriends sample_user, fakeSession.accessToken, fakeSession.accessTokenSecret, (json) ->
         # Yadda yadda put a real variable here etc.
         if json
           # Received valid response from Goodreads
@@ -127,8 +136,19 @@ onRequest = (req, res) ->
 
       gr = new goodreads.client { 'key': key, 'secret': secret }
       gr.processCallback oauthToken, oauthTokenSecret, params.query.authorize, (callback) ->
+        fakeSession.accessToken = callback.accessToken
+        fakeSession.accessTokenSecret = callback.accessTokenSecret
         res.write JSON.stringify callback
         res.end()
+        
+    when '/authuser'
+      console.log 'Getting user authenticated using oauth'
+      gr = new goodreads.client { 'key': key, 'secret': secret }
+      gr.showAuthUser fakeSession.accessToken, fakeSession.accessTokenSecret, (json) ->
+        if json
+          # Received valid response from Goodreads
+          res.write JSON.stringify json
+          res.end()
 
     else
       # ignore all other requests including annoying favicon.ico
