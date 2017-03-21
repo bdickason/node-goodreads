@@ -93,7 +93,7 @@ onRequest = (req, res) ->
     when '/friends', '/friends/'
       console.log 'Getting friends ' + '4085451'
       gr = new goodreads.client { 'key': key, 'secret': secret }
-      gr.getFriends '4085451', (json) ->
+      gr.getFriends '4085451', fakeSession.accessToken, fakeSession.accessTokenSecret, (json) ->
         # Yadda yadda put a real variable here etc.
         if json
           # Received valid response from Goodreads
@@ -127,8 +127,19 @@ onRequest = (req, res) ->
 
       gr = new goodreads.client { 'key': key, 'secret': secret }
       gr.processCallback oauthToken, oauthTokenSecret, params.query.authorize, (callback) ->
+        fakeSession.accessToken = callback.accessToken
+        fakeSession.accessTokenSecret = callback.accessTokenSecret
         res.write JSON.stringify callback
         res.end()
+        
+    when '/authuser'
+      console.log 'Getting user authenticated using oauth'
+      gr = new goodreads.client { 'key': key, 'secret': secret }
+      gr.showAuthUser fakeSession.accessToken, fakeSession.accessTokenSecret, (json) ->
+        if json
+          # Received valid response from Goodreads
+          res.write JSON.stringify json
+          res.end()
 
     else
       # ignore all other requests including annoying favicon.ico
