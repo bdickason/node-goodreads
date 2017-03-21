@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "author": "Brad Dickason <dickason@gmail.com> (http://braddickason.com)",
   "scripts": {
-    "build": "coffee --compile --output dist/ .",
+    "build": "babel . -d dist --ignore node_modules",
     "prepublish": "npm run build"
   },
   "repository": {
@@ -22,6 +22,7 @@
     "xml2js": ">= 0.1.9"
   },
   "devDependencies": {
+    "babel": "^6.23.0",
     "babel-cli": "^6.24.0",
     "babel-preset-env": "^1.3.2",
     "coffee-script": ">= 0.0.1"
