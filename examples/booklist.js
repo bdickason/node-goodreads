@@ -1,3 +1,4 @@
+/* jshint asi:true */
 /* Example!                                                    */
 /*   Grab a simple list of books from a random good reads user */
 /*                                                             */
@@ -5,34 +6,34 @@
 
 /* Configuration                                               */
 /*   Get your keys at: http://www.goodreads.com/api/keys       */
-let key = process.env.GOODREADS_KEY;  //# Enter your key here to test!
-let secret = process.env.GOODREADS_SECRET; //# Enter your goodreads secret here to test!
+let key = process.env.GOODREADS_KEY  //# Enter your key here to test!
+let secret = process.env.GOODREADS_SECRET //# Enter your goodreads secret here to test!
 
 if (!key || !secret) {
-  console.log('You need to set your Goodreads dev Key and Secret!');
-  console.log('---');
-  console.log('1) Get them at:  http://www.goodreads.com/api/keys');
-  console.log('2) Set your key environment variable with: export GOODREADS_KEY=yourkey');
-  console.log('3) Set your secret environment variable with: export GOODREADS_SECRET=yoursecret');
-  console.log('---');
-  console.log('Having trouble? Ask me at @bdickason on Twitter.');
-  process.exit(1);
+  console.log('You need to set your Goodreads dev Key and Secret!')
+  console.log('---')
+  console.log('1) Get them at:  http://www.goodreads.com/api/keys')
+  console.log('2) Set your key environment variable with: export GOODREADS_KEY=yourkey')
+  console.log('3) Set your secret environment variable with: export GOODREADS_SECRET=yoursecret')
+  console.log('---')
+  console.log('Having trouble? Ask me at @bdickason on Twitter.')
+  process.exit(1)
 }
 
 // Require the client
-const goodreads = require('../index.js').default; // For you this looks like: require 'goodreads'
-const http = require('http');
-const url = require('url');
+const goodreads = require('../index.js').default // For you this looks like: require 'goodreads'
+const http = require('http')
+const url = require('url')
 
 // excuse the clunkiness, I usually just require express and forget all this
-let fakeSession = {};
+let fakeSession = {}
 
-let sample_user = 4085451;
+let sample_user = 4085451
 
 let onRequest = function(req, res) {
-  let parse = url.parse(req.url, true);
-  let { pathname } = parse, gr;
-  console.log(`request for [${pathname}] received`);
+  let parse = url.parse(req.url, true)
+  let { pathname } = parse, gr
+  console.log(`request for [${pathname}] received`)
   switch (pathname) {
 
     // get a users info
@@ -57,7 +58,7 @@ let onRequest = function(req, res) {
     case '/author': case '/author/':
       console.log('Getting page 2 of list of books by author 18541');
       gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.getAuthor('18541', 2, json => {});
+      return gr.getAuthor('18541', 2, json => {})
 
     // get a users info
     case '/search': case '/search/':
@@ -127,14 +128,14 @@ let onRequest = function(req, res) {
       // handle oauth
 
       gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.requestToken(function(callback) {
+      return gr.requestToken().then((result) => {
 
         // log token and secret to our fake session
-        fakeSession.oauthToken = callback.oauthToken;
-        fakeSession.oauthTokenSecret = callback.oauthTokenSecret;
+        fakeSession.oauthToken = result.oauthToken;
+        fakeSession.oauthTokenSecret = result.oauthTokenSecret;
 
         // Redirect to the goodreads url!!
-        res.writeHead('302', { 'Location': callback.url });
+        res.writeHead('302', { 'Location': result.url });
         return res.end();
       });
 
