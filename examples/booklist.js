@@ -142,29 +142,31 @@ let onRequest = function(req, res) {
       // handle Goodreads' callback
 
       // grab token and secret from our fake session
-      let { oauthToken } = fakeSession;
-      let { oauthTokenSecret } = fakeSession;
+      let {oauthToken} = fakeSession
+      let {oauthTokenSecret} = fakeSession
 
       // parse the querystring
       let params = url.parse(req.url, true);
 
-      gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.processCallback(oauthToken, oauthTokenSecret, params.query.authorize, function(callback) {
-        fakeSession.accessToken = callback.accessToken;
-        fakeSession.accessTokenSecret = callback.accessTokenSecret;
-        res.write(JSON.stringify(callback));
-        return res.end();
-      });
+      gr = goodreads.client({'key': key, 'secret': secret})
+      return gr.processCallback(oauthToken, oauthTokenSecret, params.query.authorize)
+        .then(result => {
+        fakeSession.accessToken = result.accessToken
+        fakeSession.accessTokenSecret = result.accessTokenSecret
+        res.write(JSON.stringify(result))
+        return res.end()
+      })
         
     case '/authuser':
       console.log('Getting user authenticated using oauth');
       gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.showAuthUser(fakeSession.accessToken, fakeSession.accessTokenSecret, function(json) {
-        if (json) {
-          // Received valid response from Goodreads
-          res.write(JSON.stringify(json));
-          return res.end();
-        }
+      return gr.showAuthUser(fakeSession.accessToken, fakeSession.accessTokenSecret)
+        .then(json => {
+          if (json) {
+            // Received valid response from Goodreads
+            res.write(JSON.stringify(json));
+            return res.end();
+          }
       });
 
     default:
