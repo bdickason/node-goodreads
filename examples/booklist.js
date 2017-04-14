@@ -38,68 +38,67 @@ let onRequest = function(req, res) {
 
     // get a users info
     case '/user': case '/user/':
-      let { username } = parse.query;
-      console.log(`Getting user info for ${username}`);
-      gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.showUser(username, function(json) {
+      let { username } = parse.query
+      console.log(`Getting user info for ${username}`)
+      gr = goodreads.client({ 'key': key, 'secret': secret })
+      return gr.showUser(username).then(json => {
         if (json) {
           // Received valid response from Goodreads
-          res.write(JSON.stringify(json));
+          res.write(JSON.stringify(json))
           // Normally this is where you'd output a beautiful template or something!
-          return res.end();
+          return res.end()
         }
       });
 
     case '/series': case '/series/':
-      console.log('Getting list of books from series 40650');
-      gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.getSeries('40650', json => {});
+      console.log('Getting list of books from series 40650')
+      gr = goodreads.client({ 'key': key, 'secret': secret })
+      return gr.getSeries('40650').then(json=>{})
 
     case '/author': case '/author/':
       console.log('Getting page 2 of list of books by author 18541');
       gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.getAuthor('18541', 2, json => {})
+      return gr.getAuthor('18541', 2).then(json => {})
 
     // get a users info
     case '/search': case '/search/':
       let { q } = parse.query;
       console.log(`searching for book${q}`);
-      return gr.searchBooks(q(function(json) {
+      return gr.searchBooks(q).then(json => {
         if (json) {
           // Received valid response from Goodreads
-          res.write(JSON.stringify(json));
+          res.write(JSON.stringify(json))
           // Normally this is where you'd output a beautiful template or something!
-          return res.end();
+          return res.end()
         }
       })
-      );
 
     // get a user's list of shelves
     case '/shelves': case '/shelves/':
-      console.log(`Getting shelves ${sample_user}`);
-      gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.getShelves(sample_user, function(json) {
+      console.log(`Getting shelves ${sample_user}`)
+      gr = goodreads.client({ 'key': key, 'secret': secret })
+      return gr.getShelves(sample_user).then(json => {
         // I would expect you won't be hardcoding these things :)
         if (json) {
           // Received valid response from Goodreads
-          res.write(JSON.stringify(json));
+          res.write(JSON.stringify(json))
           // Normally this is where you'd output a beautiful template or something!
-          return res.end();
+          return res.end()
         }
-      });
+      })
 
     // Get a user's shelf
     case '/shelf': case '/shelf/':
-      console.log('Getting list: web');
-      gr = goodreads.client({ 'key': key, 'secret': secret });
-      let shelfOptions = {'userID': sample_user, 'shelf': 'web', 'page': 1, 'per_page': 100};
+      console.log('Getting list: web')
+      gr = goodreads.client({ 'key': key, 'secret': secret })
+      let shelfOptions = {'userID': sample_user, 'shelf': 'web', 'page': 1, 'per_page': 100}
       // I would expect you won't be hardcoding these things :)
       // There is a strange bug in /reviews/list. for per_page > 175, you get <error>forbidden</error>
       // I suspect it has to do with the processing time, so if you're getting the error, try reducing per_page
       if ("accessToken" in fakeSession) {
-        shelfOptions.accessToken = fakeSession.accessToken;
-        shelfOptions.accessTokenSecret = fakeSession.accessTokenSecret;
-        console.log(shelfOptions);
+        shelfOptions.accessToken = fakeSession.accessToken
+        shelfOptions.accessTokenSecret = fakeSession.accessTokenSecret
+        console.log(shelfOptions)
       }
       return gr.getSingleShelf(shelfOptions, function(json) {
         if (json) {
