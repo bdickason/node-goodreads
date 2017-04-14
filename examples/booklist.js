@@ -33,6 +33,7 @@ let sample_user = 4085451
 let onRequest = function(req, res) {
   let parse = url.parse(req.url, true)
   let { pathname } = parse, gr
+  let dump = json => {json && res.write(JSON.stringify(json)); res.end()}
   console.log(`request for [${pathname}] received`)
   switch (pathname) {
 
@@ -41,51 +42,30 @@ let onRequest = function(req, res) {
       let { username } = parse.query
       console.log(`Getting user info for ${username}`)
       gr = goodreads.client({ 'key': key, 'secret': secret })
-      return gr.showUser(username).then(json => {
-        if (json) {
-          // Received valid response from Goodreads
-          res.write(JSON.stringify(json))
-          // Normally this is where you'd output a beautiful template or something!
-          return res.end()
-        }
-      });
+      return gr.showUser(username).then(json => dump(json));
 
     case '/series': case '/series/':
       console.log('Getting list of books from series 40650')
       gr = goodreads.client({ 'key': key, 'secret': secret })
-      return gr.getSeries('40650').then(json=>{})
+      return gr.getSeries('40650').then(json=> dump(json))
 
     case '/author': case '/author/':
       console.log('Getting page 2 of list of books by author 18541');
-      gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.getAuthor('18541', 2).then(json => {})
+      gr = goodreads.client({ 'key': key, 'secret': secret })
+      return gr.getAuthor('18541', 2).then(json => dump(json))
 
     // get a users info
     case '/search': case '/search/':
-      let { q } = parse.query;
-      console.log(`searching for book${q}`);
-      return gr.searchBooks(q).then(json => {
-        if (json) {
-          // Received valid response from Goodreads
-          res.write(JSON.stringify(json))
-          // Normally this is where you'd output a beautiful template or something!
-          return res.end()
-        }
-      })
+      let { q } = parse.query
+      console.log(`searching for book ${q}`)
+      gr = goodreads.client({ 'key': key, 'secret': secret })
+      return gr.searchBooks(q).then(json => dump(json))
 
     // get a user's list of shelves
     case '/shelves': case '/shelves/':
       console.log(`Getting shelves ${sample_user}`)
       gr = goodreads.client({ 'key': key, 'secret': secret })
-      return gr.getShelves(sample_user).then(json => {
-        // I would expect you won't be hardcoding these things :)
-        if (json) {
-          // Received valid response from Goodreads
-          res.write(JSON.stringify(json))
-          // Normally this is where you'd output a beautiful template or something!
-          return res.end()
-        }
-      })
+      return gr.getShelves(sample_user).then(json => dump(json))
 
     // Get a user's shelf
     case '/shelf': case '/shelf/':
@@ -100,27 +80,13 @@ let onRequest = function(req, res) {
         shelfOptions.accessTokenSecret = fakeSession.accessTokenSecret
         console.log(shelfOptions)
       }
-      return gr.getSingleShelf(shelfOptions, function(json) {
-        if (json) {
-          // Received valid response from Goodreads
-          res.write(JSON.stringify(json));
-          // Normally this is where you'd output a beautiful template or something!
-          return res.end();
-        }
-      });
+      return gr.getSingleShelf(shelfOptions, dump);
 
     // Get a protected resource
     case '/friends': case '/friends/':
-      console.log(`Getting friends ${sample_user}`);
-      gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.getFriends(sample_user, fakeSession.accessToken, fakeSession.accessTokenSecret, function(json) {
-        // Yadda yadda put a real variable here etc.
-        if (json) {
-          // Received valid response from Goodreads
-          res.write(JSON.stringify(json));
-          return res.end();
-        }
-      });
+      console.log(`Getting friends ${sample_user}`)
+      gr = goodreads.client({'key': key, 'secret': secret})
+      return gr.getFriends(sample_user, fakeSession.accessToken, fakeSession.accessTokenSecret).then(json => dump(json));
 
 
     case '/oauth': case '/oauth/':
@@ -130,13 +96,13 @@ let onRequest = function(req, res) {
       return gr.requestToken().then((result) => {
 
         // log token and secret to our fake session
-        fakeSession.oauthToken = result.oauthToken;
-        fakeSession.oauthTokenSecret = result.oauthTokenSecret;
+        fakeSession.oauthToken = result.oauthToken
+        fakeSession.oauthTokenSecret = result.oauthTokenSecret
 
         // Redirect to the goodreads url!!
-        res.writeHead('302', { 'Location': result.url });
-        return res.end();
-      });
+        res.writeHead('302', { 'Location': result.url })
+        return res.end()
+      })
 
     case '/callback':
       // handle Goodreads' callback
@@ -146,28 +112,22 @@ let onRequest = function(req, res) {
       let {oauthTokenSecret} = fakeSession
 
       // parse the querystring
-      let params = url.parse(req.url, true);
+      let params = url.parse(req.url, true)
 
       gr = goodreads.client({'key': key, 'secret': secret})
       return gr.processCallback(oauthToken, oauthTokenSecret, params.query.authorize)
         .then(result => {
-        fakeSession.accessToken = result.accessToken
-        fakeSession.accessTokenSecret = result.accessTokenSecret
-        res.write(JSON.stringify(result))
-        return res.end()
+	        fakeSession.accessToken = result.accessToken
+	        fakeSession.accessTokenSecret = result.accessTokenSecret
+	        res.write(JSON.stringify(result))
+	        return res.end()
       })
         
     case '/authuser':
       console.log('Getting user authenticated using oauth');
       gr = goodreads.client({ 'key': key, 'secret': secret });
       return gr.showAuthUser(fakeSession.accessToken, fakeSession.accessTokenSecret)
-        .then(json => {
-          if (json) {
-            // Received valid response from Goodreads
-            res.write(JSON.stringify(json));
-            return res.end();
-          }
-      });
+        .then(json => dump(json))
 
     default:
       // ignore all other requests including annoying favicon.ico
