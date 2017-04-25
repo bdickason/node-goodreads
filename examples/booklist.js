@@ -44,6 +44,7 @@ let onRequest = function(req, res) {
       gr = goodreads.client({ 'key': key, 'secret': secret })
       return gr.showUser(username).then(json => dump(json));
 
+
     case '/series': case '/series/':
       console.log('Getting list of books from series 40650')
       gr = goodreads.client({ 'key': key, 'secret': secret })
@@ -60,6 +61,7 @@ let onRequest = function(req, res) {
       console.log(`searching for book ${q}`)
       gr = goodreads.client({ 'key': key, 'secret': secret })
       return gr.searchBooks(q).then(json => dump(json))
+
 
     // get a user's list of shelves
     case '/shelves': case '/shelves/':
@@ -113,6 +115,7 @@ let onRequest = function(req, res) {
 
       // parse the querystring
       let params = url.parse(req.url, true)
+
 
       gr = goodreads.client({'key': key, 'secret': secret})
       return gr.processCallback(oauthToken, oauthTokenSecret, params.query.authorize)
