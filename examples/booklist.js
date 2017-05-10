@@ -20,18 +20,20 @@ if (!key || !secret) {
 }
 
 // Require the client
-const goodreads = require('../index.js').default; // For you this looks like: require 'goodreads'
-const http = require('http');
-const url = require('url');
+import goodreads from '../index.js'; // For you this looks like: require 'goodreads'
+
+import http from 'http';
+import url from 'url';
 
 // excuse the clunkiness, I usually just require express and forget all this
 let fakeSession = {};
 
 let sample_user = 4085451;
 
-let onRequest = function(req, res) {
+let onRequest = (req, res) => {
   let parse = url.parse(req.url, true);
-  let { pathname } = parse, gr;
+  let { pathname } = parse;
+  let gr;
   console.log(`request for [${pathname}] received`);
   switch (pathname) {
 
@@ -99,7 +101,7 @@ let onRequest = function(req, res) {
         shelfOptions.accessTokenSecret = fakeSession.accessTokenSecret
         console.log(shelfOptions)
       }
-      return gr.getSingleShelf(shelfOptions, function(json) {
+      return gr.getSingleShelf(shelfOptions, json => {
         if (json) {
           // Received valid response from Goodreads
           res.write(JSON.stringify(json));
@@ -112,7 +114,7 @@ let onRequest = function(req, res) {
     case '/friends': case '/friends/':
       console.log(`Getting friends ${sample_user}`);
       gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.getFriends(sample_user, fakeSession.accessToken, fakeSession.accessTokenSecret, function(json) {
+      return gr.getFriends(sample_user, fakeSession.accessToken, fakeSession.accessTokenSecret, json => {
         // Yadda yadda put a real variable here etc.
         if (json) {
           // Received valid response from Goodreads
@@ -126,7 +128,7 @@ let onRequest = function(req, res) {
       // handle oauth
 
       gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.requestToken(function(callback) {
+      return gr.requestToken(callback => {
 
         // log token and secret to our fake session
         fakeSession.oauthToken = callback.oauthToken;
