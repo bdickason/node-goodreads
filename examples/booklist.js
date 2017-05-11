@@ -27,23 +27,22 @@ const url = require('url')
 
 // excuse the clunkiness, I usually just require express and forget all this
 let fakeSession = {}
-
 let sample_user = 4085451
+
 
 let onRequest = function(req, res) {
   let parse = url.parse(req.url, true)
   let { pathname } = parse, gr
   let dump = json => {json && res.write(JSON.stringify(json)); res.end()}
   console.log(`request for [${pathname}] received`)
-  switch (pathname) {
 
+  switch (pathname) {
     // get a users info
     case '/user': case '/user/':
       let { username } = parse.query
       console.log(`Getting user info for ${username}`)
       gr = goodreads.client({ 'key': key, 'secret': secret })
       return gr.showUser(username).then(json => dump(json));
-
 
     case '/series': case '/series/':
       console.log('Getting list of books from series 40650')
@@ -61,7 +60,6 @@ let onRequest = function(req, res) {
       console.log(`searching for book ${q}`)
       gr = goodreads.client({ 'key': key, 'secret': secret })
       return gr.searchBooks(q).then(json => dump(json))
-
 
     // get a user's list of shelves
     case '/shelves': case '/shelves/':
@@ -96,7 +94,6 @@ let onRequest = function(req, res) {
 
       gr = goodreads.client({ 'key': key, 'secret': secret });
       return gr.requestToken().then((result) => {
-
         // log token and secret to our fake session
         fakeSession.oauthToken = result.oauthToken
         fakeSession.oauthTokenSecret = result.oauthTokenSecret
@@ -112,7 +109,6 @@ let onRequest = function(req, res) {
       // grab token and secret from our fake session
       let {oauthToken} = fakeSession
       let {oauthTokenSecret} = fakeSession
-
       // parse the querystring
       let params = url.parse(req.url, true)
 
@@ -125,7 +121,7 @@ let onRequest = function(req, res) {
 	        res.write(JSON.stringify(result))
 	        return res.end()
       })
-        
+
     case '/authuser':
       console.log('Getting user authenticated using oauth');
       gr = goodreads.client({ 'key': key, 'secret': secret });
