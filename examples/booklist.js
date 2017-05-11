@@ -20,13 +20,13 @@ if (!key || !secret) {
 }
 
 // Require the client
-const goodreads = require('../index.js').default; // For you this looks like: require 'goodreads'
-const http = require('http');
-const url = require('url');
+import goodreads from '../index.js'; // For you this looks like: require 'goodreads'
+
+import http from 'http';
+import url from 'url';
 
 // excuse the clunkiness, I usually just require express and forget all this
 let fakeSession = {};
-
 let sample_user = 4085451;
 
 let onRequest = function(req, res) {
@@ -34,6 +34,7 @@ let onRequest = function(req, res) {
   let { pathname } = parse, gr
   let dump = json => {json && res.write(JSON.stringify(json)); res.end()}
   console.log(`request for [${pathname}] received`)
+
   switch (pathname) {
 
     // get a users info
@@ -92,7 +93,7 @@ let onRequest = function(req, res) {
       // handle oauth
 
       gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.requestToken(function(callback) {
+      return gr.requestToken(callback => {
 
         // log token and secret to our fake session
         fakeSession.oauthToken = result.oauthToken
