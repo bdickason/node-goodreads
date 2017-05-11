@@ -68,16 +68,16 @@ let onRequest = function(req, res) {
 
     // Get a user's shelf
     case '/shelf': case '/shelf/':
-      console.log('Getting list: web');
-      gr = goodreads.client({ 'key': key, 'secret': secret });
-      let shelfOptions = {'userID': sample_user, 'shelf': 'web', 'page': 1, 'per_page': 100};
+      console.log('Getting list: web')
+      gr = goodreads.client({ 'key': key, 'secret': secret })
+      let shelfOptions = {'userID': sample_user, 'shelf': 'web', 'page': 1, 'per_page': 100}
       // I would expect you won't be hardcoding these things :)
       // There is a strange bug in /reviews/list. for per_page > 175, you get <error>forbidden</error>
       // I suspect it has to do with the processing time, so if you're getting the error, try reducing per_page
       if ("accessToken" in fakeSession) {
-        shelfOptions.accessToken = fakeSession.accessToken;
-        shelfOptions.accessTokenSecret = fakeSession.accessTokenSecret;
-        console.log(shelfOptions);
+        shelfOptions.accessToken = fakeSession.accessToken
+        shelfOptions.accessTokenSecret = fakeSession.accessTokenSecret
+        console.log(shelfOptions)
       }
       return gr.getSingleShelf(shelfOptions, dump);
 
@@ -107,11 +107,11 @@ let onRequest = function(req, res) {
       // handle Goodreads' callback
 
       // grab token and secret from our fake session
-      let { oauthToken } = fakeSession;
-      let { oauthTokenSecret } = fakeSession;
-
+      let {oauthToken} = fakeSession
+      let {oauthTokenSecret} = fakeSession
       // parse the querystring
       let params = url.parse(req.url, true)
+
 
       gr = goodreads.client({'key': key, 'secret': secret})
       return gr.processCallback(oauthToken, oauthTokenSecret, params.query.authorize)
@@ -125,9 +125,9 @@ let onRequest = function(req, res) {
     case '/authuser':
       console.log('Getting user authenticated using oauth');
       gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.showAuthUser(fakeSession.accessToken, fakeSession.accessTokenSecret)
+      return gr.showAuthUser(fakeSession.accessToken, fakeSession.accessTokenSecret) getProtectedRequest
         .then(json => dump(json))
-
+ 
     default:
       // ignore all other requests including annoying favicon.ico
       res.write('<html>Ok but you should enter a parameter or two.\n\n');
