@@ -121,7 +121,7 @@ let onRequest = function(req, res) {
 	        res.write(JSON.stringify(result))
 	        return res.end()
       })
-        
+
     case '/authuser':
       console.log('Getting user authenticated using oauth');
       gr = goodreads.client({ 'key': key, 'secret': secret });
