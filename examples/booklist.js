@@ -109,9 +109,9 @@ let onRequest = function(req, res) {
       // grab token and secret from our fake session
       let {oauthToken} = fakeSession
       let {oauthTokenSecret} = fakeSession
-
       // parse the querystring
-      let params = url.parse(req.url, true);
+      let params = url.parse(req.url, true)
+
 
       gr = goodreads.client({'key': key, 'secret': secret})
       return gr.processCallback(oauthToken, oauthTokenSecret, params.query.authorize)
@@ -125,9 +125,9 @@ let onRequest = function(req, res) {
     case '/authuser':
       console.log('Getting user authenticated using oauth');
       gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.showAuthUser(fakeSession.accessToken, fakeSession.accessTokenSecret)
+      return gr.showAuthUser(fakeSession.accessToken, fakeSession.accessTokenSecret) getProtectedRequest
         .then(json => dump(json))
-
+ 
     default:
       // ignore all other requests including annoying favicon.ico
       res.write('<html>Ok but you should enter a parameter or two.\n\n');
