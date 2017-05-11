@@ -1,3 +1,4 @@
+/* jshint asi:true */
 /* Example!                                                    */
 /*   Grab a simple list of books from a random good reads user */
 /*                                                             */
@@ -5,29 +6,29 @@
 
 /* Configuration                                               */
 /*   Get your keys at: http://www.goodreads.com/api/keys       */
-let key = process.env.GOODREADS_KEY;  //# Enter your key here to test!
-let secret = process.env.GOODREADS_SECRET; //# Enter your goodreads secret here to test!
+let key = process.env.GOODREADS_KEY  //# Enter your key here to test!
+let secret = process.env.GOODREADS_SECRET //# Enter your goodreads secret here to test!
 
 if (!key || !secret) {
-  console.log('You need to set your Goodreads dev Key and Secret!');
-  console.log('---');
-  console.log('1) Get them at:  http://www.goodreads.com/api/keys');
-  console.log('2) Set your key environment variable with: export GOODREADS_KEY=yourkey');
-  console.log('3) Set your secret environment variable with: export GOODREADS_SECRET=yoursecret');
-  console.log('---');
-  console.log('Having trouble? Ask me at @bdickason on Twitter.');
-  process.exit(1);
+  console.log('You need to set your Goodreads dev Key and Secret!')
+  console.log('---')
+  console.log('1) Get them at:  http://www.goodreads.com/api/keys')
+  console.log('2) Set your key environment variable with: export GOODREADS_KEY=yourkey')
+  console.log('3) Set your secret environment variable with: export GOODREADS_SECRET=yoursecret')
+  console.log('---')
+  console.log('Having trouble? Ask me at @bdickason on Twitter.')
+  process.exit(1)
 }
 
 // Require the client
-import goodreads from '../index.js'; // For you this looks like: require 'goodreads'
-
-import http from 'http';
-import url from 'url';
+const goodreads = require('../index.js').default // For you this looks like: require 'goodreads'
+const http = require('http')
+const url = require('url')
 
 // excuse the clunkiness, I usually just require express and forget all this
-let fakeSession = {};
-let sample_user = 4085451;
+let fakeSession = {}
+let sample_user = 4085451
+
 
 let onRequest = function(req, res) {
   let parse = url.parse(req.url, true)
@@ -36,7 +37,6 @@ let onRequest = function(req, res) {
   console.log(`request for [${pathname}] received`)
 
   switch (pathname) {
-
     // get a users info
     case '/user': case '/user/':
       let { username } = parse.query
@@ -93,8 +93,7 @@ let onRequest = function(req, res) {
       // handle oauth
 
       gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.requestToken(callback => {
-
+      return gr.requestToken().then((result) => {
         // log token and secret to our fake session
         fakeSession.oauthToken = result.oauthToken
         fakeSession.oauthTokenSecret = result.oauthTokenSecret
@@ -126,9 +125,9 @@ let onRequest = function(req, res) {
     case '/authuser':
       console.log('Getting user authenticated using oauth');
       gr = goodreads.client({ 'key': key, 'secret': secret });
-      return gr.showAuthUser(fakeSession.accessToken, fakeSession.accessTokenSecret) getProtectedRequest
+      return gr.showAuthUser(fakeSession.accessToken, fakeSession.accessTokenSecret)
         .then(json => dump(json))
- 
+
     default:
       // ignore all other requests including annoying favicon.ico
       res.write('<html>Ok but you should enter a parameter or two.\n\n');
